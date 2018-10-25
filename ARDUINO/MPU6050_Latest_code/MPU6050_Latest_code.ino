@@ -184,9 +184,6 @@ void setup() {
 // ===                          Loop                            ===
 // ================================================================
 void loop() {
-  String a = String(Roll,3);
-  if (mpuInterrupt ) { // wait for MPU interrupt or extra packet(s) available
     GetDMP();
     ble.println("Yaw: " + String(Yaw) + " , Pitch: " + String(Pitch) + " , Roll: " + String(Roll));
-  }
 }
