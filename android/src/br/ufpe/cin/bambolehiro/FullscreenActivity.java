@@ -108,7 +108,7 @@ public class FullscreenActivity extends AppCompatActivity {
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        Button dummy_button = (Button) findViewById(R.id.dummy_button);
+        Button dummy_button = (Button) findViewById(R.id.btn_play);
 
         // SKIPPING line just to check if the intent is working
         //findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);

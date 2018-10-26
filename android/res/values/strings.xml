@@ -2,7 +2,8 @@
 <resources>
 
     <string name="app_name">BamboleHiro</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="dummy_button">Dummy Button</string>
+    <string name="play_txt">Vamos Jogar!</string>
+    <string name="settings_txt">Configurações</string>
+    <string name="info_txt">Informações</string>
 
 </resources>
