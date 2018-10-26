@@ -2,8 +2,11 @@
 <resources>
 
     <string name="app_name">BamboleHiro</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="dummy_button">Dummy Button</string>
+    <string name="play_txt">Vamos Jogar!</string>
+    <string name="settings_txt">Configurações</string>
+    <string name="info_txt">Informações</string>
+
+    <!-- BLE items -->
     <string name="title_btn_scan">Scan devices</string>
     <string name="ble_not_supported">BLE is not supported</string>
     <string name="label_data">Data:</string>
