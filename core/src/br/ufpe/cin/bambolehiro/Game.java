@@ -5,18 +5,18 @@ import java.util.Iterator;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
@@ -42,12 +42,14 @@ public class Game extends ApplicationAdapter {
 	private final int ringVelocity = 50;
 	private final int viewWidth = 800;
 	private final int viewHeight = 480;
-	private final int timeToSpawn = 10000; // in milliseconds
-	private BitmapFont font;
+	private final int timeToSpawn = 10000; // in milliseconds (10 seconds)
+	private BitmapFont whiteFont;
+	private BitmapFont greenFont;
+	private BitmapFont redFont;
 	private int totalPoints;
-	private String tipMessage = "Aguarde até Hiro tocar no Bambolê";
 	private String lucyPos = "right";
 	private float lastRingPosition;
+	private String bamboleStatus;
 
 	@Override
 	public void create() {
@@ -72,8 +74,11 @@ public class Game extends ApplicationAdapter {
 		backgroundMusic.play();
 
 		// load Font
-		font = new BitmapFont(); // Arial default
-		font.getData().setScale(2, 2);
+		FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Asap-Bold.ttf"));
+		whiteFont = createFont(fontGenerator, 24, Color.WHITE);
+		greenFont = createFont(fontGenerator, 24, Color.GREEN);
+		redFont = createFont(fontGenerator, 24, Color.RED);
+		fontGenerator.dispose(); // avoid memory leaks
 
 		// create the camera and the SpriteBatch
 		camera = new OrthographicCamera();
@@ -96,6 +101,16 @@ public class Game extends ApplicationAdapter {
 		// create the raindrops array and spawn the first raindrop
 		rings = new Array<Rectangle>();
 		spawnRings();
+	}
+
+	private String getBamboleStatus() {
+		bamboleStatus = "BAMBOLE ";
+		if (true) {
+			bamboleStatus += "CONECTADO";
+		} else {
+			bamboleStatus += "DESCONECTADO";
+		}
+		return bamboleStatus;
 	}
 
 	private void spawnRings() {
@@ -128,6 +143,14 @@ public class Game extends ApplicationAdapter {
 		return texture;
 	}
 
+	private BitmapFont createFont(FreeTypeFontGenerator generator, int size, Color colorName) {
+		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+		parameter.size = size;
+		parameter.color = colorName;
+		parameter.borderWidth = 2;
+		return generator.generateFont(parameter);
+	}
+
 	@Override
 	public void render() {
 		// clear the screen with a dark blue color. The
@@ -149,24 +172,19 @@ public class Game extends ApplicationAdapter {
 		// all drops
 		batch.begin();
 		batch.draw(backgroundTexture, -20 , 0, viewWidth+40, viewHeight);
-		font.draw(batch, "PONTOS: " + totalPoints, viewWidth/2 + 200 , 40);
+		if (getBamboleStatus().contains("DESCONECTADO")) {
+			redFont.draw(batch, getBamboleStatus(), 0, 20);
+		} else {
+			greenFont.draw(batch, getBamboleStatus(), 0, 20);
+		}
+
+		whiteFont.draw(batch, "PONTOS: " + totalPoints, viewWidth/2 + viewWidth/4 , 20);
 		batch.draw(lucyImage, lucy.x, lucy.y);
 		batch.draw(hiroImage, hiro.x, hiro.y);
 		for(Rectangle r: rings) {
 			batch.draw(ringImage, r.x, r.y);
 		}
 		batch.end();
-
-		// process user input
-		// if(Gdx.input.isTouched()) {
-		//	Vector3 touchPos = new Vector3();
-		//	touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-		//	camera.unproject(touchPos);
-		//  hiro.x = touchPos.x - hiroSize / 2;
-		// }
-
-		// if(Gdx.input.isKeyPressed(Keys.LEFT)) hiro.x -= 200 * Gdx.graphics.getDeltaTime();
-		// if(Gdx.input.isKeyPressed(Keys.RIGHT)) hiro.x += 200 * Gdx.graphics.getDeltaTime();
 
 		// make sure Hiro stays within the screen bounds
 		if(hiro.x < 0) hiro.x = 0;
@@ -216,7 +234,9 @@ public class Game extends ApplicationAdapter {
 		ringImage.dispose();
 		hiroImage.dispose();
 		dropSound.dispose();
-		font.dispose();
+		greenFont.dispose();
+		whiteFont.dispose();
+		redFont.dispose();
 		backgroundMusic.dispose();
 		batch.dispose();
 	}
