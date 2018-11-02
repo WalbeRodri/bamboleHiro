@@ -166,6 +166,8 @@ void MPUMath() {
     DPRINTLN();
   }
 }
+
+
 // ================================================================
 // ===                         Setup                            ===
 // ================================================================
@@ -186,4 +188,10 @@ void setup() {
 void loop() {
     GetDMP();
     ble.println("Yaw: " + String(Yaw) + " , Pitch: " + String(Pitch) + " , Roll: " + String(Roll));
+    Serial.println("Yaw: " + String(Yaw) + " , Pitch: " + String(Pitch) + " , Roll: " + String(Roll));
+    
+    if (abs(Roll) > 1 && abs(Roll) < 20) {
+      Serial.println(" -------------------- >> GIROUUU << ------------------------");
+      ble.println(" -------------------- >> GIROUUU << ------------------------");
+    }
 }
