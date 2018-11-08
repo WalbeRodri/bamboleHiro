@@ -23,11 +23,11 @@ import com.badlogic.gdx.utils.TimeUtils;
 public class Game extends ApplicationAdapter {
 	private Texture backgroundTexture;
 	private Texture ringImage;
+	private Texture ringPlusImage;
 	private Pixmap ringImageOrigin;
+	private Pixmap ringPlusImageOrigin;
 	private Texture hiroImage;
-	private Pixmap hiroImageOrigin;
 	private Texture lucyImage;
-	private Pixmap lucyImageOrigin;
 	private Sound dropSound;
 	private Music backgroundMusic;
 	private SpriteBatch batch;
@@ -36,13 +36,13 @@ public class Game extends ApplicationAdapter {
 	private Rectangle lucy;
 	private Array<Rectangle> rings;
 	private long lastDropTime;
-	private final int ringSize = 32;
-	private final int hiroSize = 128;
-	private final int lucySize = 128;
-	private final int ringVelocity = 50;
-	private final int viewWidth = 800;
-	private final int viewHeight = 480;
-	private final int timeToSpawn = 10000; // in milliseconds (10 seconds)
+	private int ringSize;
+	private int hiroSize;
+	private int lucySize;
+	private final int ringVelocity = Constants.RING_VELOCITY;
+	private final int viewWidth = Constants.GAME_WIDTH;
+	private final int viewHeight = Constants.GAME_HEIGHT;
+	private final int timeToSpawn = Constants.DROP_RING_DURATION;
 	private BitmapFont whiteFont;
 	private BitmapFont greenFont;
 	private BitmapFont redFont;
@@ -50,20 +50,25 @@ public class Game extends ApplicationAdapter {
 	private String lucyPos = "right";
 	private float lastRingPosition;
 	private String bamboleStatus;
+	private IBluetooth bluetoothCom;
 
 	@Override
 	public void create() {
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
-		// load the images for the droplet and the bucket
+		// load the images
 		backgroundTexture = new Texture(Gdx.files.internal("bg.png"));
-		ringImageOrigin = new Pixmap(Gdx.files.internal("ring.png"));
-		hiroImageOrigin = new Pixmap(Gdx.files.internal("Hiro_Neutro.png"));
-		lucyImageOrigin = new Pixmap(Gdx.files.internal("Lucy_Neutro.png"));
+		hiroImage = new Texture(Gdx.files.internal("hiro_0.png"));
+		lucyImage = new Texture(Gdx.files.internal("lucy_0.png"));
+
+		ringSize = Constants.RING_SIZE;
+		lucySize = lucyImage.getHeight();
+		hiroSize = hiroImage.getHeight();
 
 		// resize textures
+		ringImageOrigin = new Pixmap(Gdx.files.internal("ring.png"));
+		ringPlusImageOrigin = new Pixmap(Gdx.files.internal("ring_plus.png"));
 		ringImage = resizeToPixels(ringImageOrigin, ringSize);
-		hiroImage = resizeToPixels(hiroImageOrigin, hiroSize);
-		lucyImage = resizeToPixels(lucyImageOrigin, lucySize);
+		ringPlusImage = resizeToPixels(ringPlusImageOrigin, ringSize);
 
 		// load the drop sound effect and the rain background "music"
 		dropSound = Gdx.audio.newSound(Gdx.files.internal("drop_sound.wav"));
@@ -172,11 +177,17 @@ public class Game extends ApplicationAdapter {
 		// all drops
 		batch.begin();
 		batch.draw(backgroundTexture, -20 , 0, viewWidth+40, viewHeight);
-		if (getBamboleStatus().contains("DESCONECTADO")) {
-			redFont.draw(batch, getBamboleStatus(), 0, 20);
-		} else {
-			greenFont.draw(batch, getBamboleStatus(), 0, 20);
-		}
+
+		if (getBLEStatus()) {
+            greenFont.draw(batch, getBamboleStatus(), 0, 20);
+            try{
+				greenFont.draw(batch, ""+bluetoothCom.isConnected(), 20, 20);
+            } catch (Exception e){
+				greenFont.draw(batch, "none", 0, 100);
+			}
+        } else {
+            redFont.draw(batch, getBamboleStatus(), 0, 20);
+        }
 
 		whiteFont.draw(batch, "PONTOS: " + totalPoints, viewWidth/2 + viewWidth/4 , 20);
 		batch.draw(lucyImage, lucy.x, lucy.y);
@@ -228,10 +239,21 @@ public class Game extends ApplicationAdapter {
 		}
 	}
 
+	private boolean getBLEStatus() {
+        // method to check if BLE is connected
+	    return true;
+    }
+
+	public void setBluetoothInterface(IBluetooth interfaceBluetooth)
+	{
+		bluetoothCom = interfaceBluetooth;
+	}
+
 	@Override
 	public void dispose() {
 		// dispose of all the native resources
 		ringImage.dispose();
+		ringPlusImage.dispose();
 		hiroImage.dispose();
 		dropSound.dispose();
 		greenFont.dispose();

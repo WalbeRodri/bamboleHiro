@@ -116,6 +116,7 @@ public class FullscreenActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(FullscreenActivity.this, AndroidLauncher.class);
+//                Intent intent = new Intent(FullscreenActivity.this, DeviceScanActivity.class);
                 FullscreenActivity.this.startActivity(intent);
             }
         });

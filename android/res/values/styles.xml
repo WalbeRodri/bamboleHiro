@@ -1,7 +1,7 @@
 <resources>
 
     <style name="GdxTheme" parent="android:Theme">
-		<item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowAnimationStyle">@android:style/Animation</item>
         <item name="android:windowNoTitle">true</item>
@@ -10,9 +10,16 @@
     </style>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="android:Theme.Holo.Light">
-    <!--<style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar"> -->
-        <!-- Customize your theme here. -->
+    <!--<style name="AppTheme" parent="android:Theme.Holo.Light">-->
+    <!--&lt;!&ndash;Customize your theme here. &ndash;&gt;-->
+    <!--<item name="colorPrimary">@color/colorLightYellow</item>-->
+    <!--<item name="colorPrimaryDark">@color/colorDarkBlue</item>-->
+    <!--<item name="colorAccent">@color/colorLightPink</item>-->
+    <!--</style>-->
+
+    <!-- THIS THEME IS WORKING AS EXPECTED -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!--Customize your theme here. -->
         <item name="colorPrimary">@color/colorLightYellow</item>
         <item name="colorPrimaryDark">@color/colorDarkBlue</item>
         <item name="colorAccent">@color/colorLightPink</item>
