@@ -10,7 +10,6 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -20,12 +19,12 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
+import br.ufpe.cin.bambolehiro.Entities.Ring;
+
 public class Game extends ApplicationAdapter {
 	private Texture backgroundTexture;
-	private Texture ringImage;
-	private Texture ringPlusImage;
-	private Pixmap ringImageOrigin;
-	private Pixmap ringPlusImageOrigin;
+	private Ring ringImage;
+	private Ring ringPlusImage;
 	private Texture hiroImage;
 	private Texture lucyImage;
 	private Sound dropSound;
@@ -36,7 +35,6 @@ public class Game extends ApplicationAdapter {
 	private Rectangle lucy;
 	private Array<Rectangle> rings;
 	private long lastDropTime;
-	private int ringSize;
 	private int hiroSize;
 	private int lucySize;
 	private final int ringVelocity = Constants.RING_VELOCITY;
@@ -60,15 +58,11 @@ public class Game extends ApplicationAdapter {
 		hiroImage = new Texture(Gdx.files.internal("hiro_0.png"));
 		lucyImage = new Texture(Gdx.files.internal("lucy_0.png"));
 
-		ringSize = Constants.RING_SIZE;
 		lucySize = lucyImage.getHeight();
 		hiroSize = hiroImage.getHeight();
 
-		// resize textures
-		ringImageOrigin = new Pixmap(Gdx.files.internal("ring.png"));
-		ringPlusImageOrigin = new Pixmap(Gdx.files.internal("ring_plus.png"));
-		ringImage = resizeToPixels(ringImageOrigin, ringSize);
-		ringPlusImage = resizeToPixels(ringPlusImageOrigin, ringSize);
+		ringImage = new Ring(false);
+		ringPlusImage = new Ring(true);
 
 		// load the drop sound effect and the rain background "music"
 		dropSound = Gdx.audio.newSound(Gdx.files.internal("drop_sound.wav"));
@@ -105,7 +99,6 @@ public class Game extends ApplicationAdapter {
 
 		// create the raindrops array and spawn the first raindrop
 		rings = new Array<Rectangle>();
-		spawnRings();
 	}
 
 	private String getBamboleStatus() {
@@ -129,23 +122,11 @@ public class Game extends ApplicationAdapter {
 		if(ring.x > viewWidth + hiroSize) ring.x = viewWidth - hiroSize;
 
 		ring.y = viewHeight - lucySize;
-		ring.width = ringSize;
-		ring.height = ringSize;
+		ring.width = Ring.WIDTH;
+		ring.height = Ring.HEIGHT;
 		rings.add(ring);
 		lastDropTime = TimeUtils.millis();
 		lastRingPosition = ring.x;
-	}
-
-	private Texture resizeToPixels(Pixmap image, int pixels) {
-		Pixmap pixmap = new Pixmap(pixels, pixels, image.getFormat());
-		pixmap.drawPixmap(image,
-				0, 0, image.getWidth(), image.getHeight(),
-				0, 0, pixmap.getWidth(), pixmap.getHeight()
-		);
-		Texture texture = new Texture(pixmap);
-		pixmap.dispose();
-
-		return texture;
 	}
 
 	private BitmapFont createFont(FreeTypeFontGenerator generator, int size, Color colorName) {
@@ -193,7 +174,7 @@ public class Game extends ApplicationAdapter {
 		batch.draw(lucyImage, lucy.x, lucy.y);
 		batch.draw(hiroImage, hiro.x, hiro.y);
 		for(Rectangle r: rings) {
-			batch.draw(ringImage, r.x, r.y);
+			batch.draw(ringImage.getRect(), r.x, r.y);
 		}
 		batch.end();
 
@@ -229,7 +210,7 @@ public class Game extends ApplicationAdapter {
 		for (Iterator<Rectangle> iter = rings.iterator(); iter.hasNext(); ) {
 			Rectangle r = iter.next();
 			r.y -= ringVelocity * Gdx.graphics.getDeltaTime();
-			if(r.y + ringSize < 0) iter.remove();
+			if(r.y + Ring.WIDTH < 0) iter.remove();
 			if(r.overlaps(hiro)) {
 				lastRingPosition = lucy.x;
 				totalPoints+=5;
