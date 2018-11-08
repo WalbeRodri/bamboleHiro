@@ -11,18 +11,18 @@ public class Ring {
     public static int HEIGHT = Constants.RING_SIZE;
     public static int WIDTH = Constants.RING_SIZE;
 
-    private int x;
-    private int y;
+    public int x;
+    public int y;
     private int velocity = Constants.RING_VELOCITY;
     private int value;
     private boolean isPlus;
 
-    private Pixmap image;
-    private Texture rect;
+    private Pixmap pixmap;
+    public Texture image;
 
     public Ring(boolean isPlus) {
         this.isPlus = isPlus;
-        this.rect = this.create();
+        this.image = this.create();
     }
 
     private Texture resizeToPixels(Pixmap image, int width, int height) {
@@ -39,12 +39,12 @@ public class Ring {
     public Texture create() {
         // resize textures
         if (this.isPlus) {
-            image = new Pixmap(Gdx.files.internal("ring_plus.png"));
+            pixmap = new Pixmap(Gdx.files.internal("ring_plus.png"));
         } else {
-            image = new Pixmap(Gdx.files.internal("ring.png"));
+            pixmap = new Pixmap(Gdx.files.internal("ring.png"));
         }
 
-        return resizeToPixels(image, WIDTH, HEIGHT);
+        return resizeToPixels(pixmap, WIDTH, HEIGHT);
     }
 
     public void draw(){
@@ -52,23 +52,11 @@ public class Ring {
     }
 
     public void dispose(){
-        this.rect.dispose();
-    }
-
-    public int getX() {
-        return this.x;
-    }
-
-    public int getY() {
-        return this.y;
-    }
-
-    public Texture getRect() {
-        return this.rect;
+        image.dispose();
     }
 
     public int getVelocity() {
-        return this.velocity;
+        return velocity;
     }
 
     public void setVelocity(int velocity) {
@@ -76,6 +64,6 @@ public class Ring {
     }
 
     public void move(int step) {
-        this.y -= 1;
+        this.y -= step;
     }
 }

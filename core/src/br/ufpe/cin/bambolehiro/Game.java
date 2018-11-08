@@ -19,6 +19,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
+import br.ufpe.cin.bambolehiro.Entities.Actor;
 import br.ufpe.cin.bambolehiro.Entities.Ring;
 
 public class Game extends ApplicationAdapter {
@@ -31,8 +32,8 @@ public class Game extends ApplicationAdapter {
 	private Music backgroundMusic;
 	private SpriteBatch batch;
 	private OrthographicCamera camera;
-	private Rectangle hiro;
-	private Rectangle lucy;
+	private Rectangle hiroRect;
+	private Rectangle lucyRect;
 	private Array<Rectangle> rings;
 	private long lastDropTime;
 	private int hiroSize;
@@ -49,14 +50,18 @@ public class Game extends ApplicationAdapter {
 	private float lastRingPosition;
 	private String bamboleStatus;
 	private IBluetooth bluetoothCom;
+	private Actor hiro;
+	private Actor lucy;
 
 	@Override
 	public void create() {
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 		// load the images
 		backgroundTexture = new Texture(Gdx.files.internal("bg.png"));
-		hiroImage = new Texture(Gdx.files.internal("hiro_0.png"));
-		lucyImage = new Texture(Gdx.files.internal("lucy_0.png"));
+		Actor hiro = new Actor("hiro_0.png");
+		hiroImage = hiro.image;
+		Actor lucy = new Actor("lucy_0.png");
+		lucyImage = lucy.image;
 
 		lucySize = lucyImage.getHeight();
 		hiroSize = hiroImage.getHeight();
@@ -85,17 +90,17 @@ public class Game extends ApplicationAdapter {
 		batch = new SpriteBatch();
 
 		// create a Rectangle to logically represent the bucket
-		hiro = new Rectangle();
-		hiro.x = viewWidth / 2 - hiroSize / 2; // center the bucket horizontally
-		hiro.y = 20; // bottom left corner of the bucket is 20 pixels above the bottom screen edge
-		hiro.width = hiroSize;
-		hiro.height = hiroSize;
+		hiroRect = new Rectangle();
+		hiroRect.x = viewWidth / 2 - hiroSize / 2; // center the bucket horizontally
+		hiroRect.y = 20; // bottom left corner of the bucket is 20 pixels above the bottom screen edge
+		hiroRect.width = hiroSize;
+		hiroRect.height = hiroSize;
 
-		lucy = new Rectangle();
-		lucy.x = viewWidth / 2 - lucySize / 2; // center the bucket horizontally
-		lucy.y = viewHeight - lucySize; // bottom left corner of the bucket is 20 pixels above the bottom screen edge
-		lucy.width = lucySize;
-		lucy.height = lucySize;
+		lucyRect = new Rectangle();
+		lucyRect.x = viewWidth / 2 - lucySize / 2; // center the bucket horizontally
+		lucyRect.y = viewHeight - lucySize; // bottom left corner of the bucket is 20 pixels above the bottom screen edge
+		lucyRect.width = lucySize;
+		lucyRect.height = lucySize;
 
 		// create the raindrops array and spawn the first raindrop
 		rings = new Array<Rectangle>();
@@ -117,7 +122,7 @@ public class Game extends ApplicationAdapter {
 		if (pos == 0) pos = 1;
 		if (pos == 1) pos = 2;
 
-		ring.x = lucy.x + (pos * 50); // ring appears on the left/right of Lucy
+		ring.x = lucyRect.x + (pos * 50); // ring appears on the left/right of Lucy
 		if(ring.x < 0) ring.x = 0;
 		if(ring.x > viewWidth + hiroSize) ring.x = viewWidth - hiroSize;
 
@@ -171,35 +176,35 @@ public class Game extends ApplicationAdapter {
         }
 
 		whiteFont.draw(batch, "PONTOS: " + totalPoints, viewWidth/2 + viewWidth/4 , 20);
-		batch.draw(lucyImage, lucy.x, lucy.y);
-		batch.draw(hiroImage, hiro.x, hiro.y);
+		batch.draw(lucyImage, lucyRect.x, lucyRect.y);
+		batch.draw(hiroImage, hiroRect.x, hiroRect.y);
 		for(Rectangle r: rings) {
-			batch.draw(ringImage.getRect(), r.x, r.y);
+			batch.draw(ringImage.image, r.x, r.y);
 		}
 		batch.end();
 
 		// make sure Hiro stays within the screen bounds
-		if(hiro.x < 0) hiro.x = 0;
-		if(hiro.x > viewWidth - hiroSize) hiro.x = viewWidth - hiroSize;
+		if(hiroRect.x < 0) hiroRect.x = 0;
+		if(hiroRect.x > viewWidth - hiroSize) hiroRect.x = viewWidth - hiroSize;
 
 		// make sure Lucy stays within the screen bounds
-		if(lucy.x < 0) {
-			lucy.x = 0;
+		if(lucyRect.x < 0) {
+			lucyRect.x = 0;
 			lucyPos = "right";
 		}
-		if(lucy.x > viewWidth - lucySize) {
-			lucy.x = viewWidth - lucySize;
+		if(lucyRect.x > viewWidth - lucySize) {
+			lucyRect.x = viewWidth - lucySize;
 			lucyPos = "left";
 		}
 
 		// Lucy animation
-		if (lucyPos == "right") lucy.x += 1;
-		if (lucyPos == "left") lucy.x -= 1;
+		if (lucyPos == "right") lucyRect.x += 1;
+		if (lucyPos == "left") lucyRect.x -= 1;
 
 		// Hiro follows the rings position
-		if (hiro.x > lastRingPosition) hiro.x -= 1;
-		else if (hiro.x < 0) hiro.x += 1;
-		else hiro.x += 1;
+		if (hiroRect.x > lastRingPosition) hiroRect.x -= 1;
+		else if (hiroRect.x < 0) hiroRect.x += 1;
+		else hiroRect.x += 1;
 
 		// check if we need to create a new raindrop
 		if(TimeUtils.millis() - lastDropTime > timeToSpawn) spawnRings();
@@ -211,8 +216,8 @@ public class Game extends ApplicationAdapter {
 			Rectangle r = iter.next();
 			r.y -= ringVelocity * Gdx.graphics.getDeltaTime();
 			if(r.y + Ring.WIDTH < 0) iter.remove();
-			if(r.overlaps(hiro)) {
-				lastRingPosition = lucy.x;
+			if(r.overlaps(hiroRect)) {
+				lastRingPosition = lucyRect.x;
 				totalPoints+=5;
 				dropSound.play();
 				iter.remove();
@@ -236,6 +241,9 @@ public class Game extends ApplicationAdapter {
 		ringImage.dispose();
 		ringPlusImage.dispose();
 		hiroImage.dispose();
+		lucyImage.dispose();
+		hiro.dispose();
+		lucy.dispose();
 		dropSound.dispose();
 		greenFont.dispose();
 		whiteFont.dispose();
