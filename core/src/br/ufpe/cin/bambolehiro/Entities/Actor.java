@@ -2,6 +2,8 @@ package br.ufpe.cin.bambolehiro.Entities;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class Actor {
 
@@ -30,6 +32,10 @@ public class Actor {
 
     public Texture create(String assetImage){
         return new Texture(Gdx.files.internal(assetImage));
+    }
+
+    public void createAnimation(String[] images) {
+
     }
 
     public void dispose(){

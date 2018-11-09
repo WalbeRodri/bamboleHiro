@@ -11,8 +11,11 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
@@ -52,6 +55,13 @@ public class Game extends ApplicationAdapter {
 	private IBluetooth bluetoothCom;
 	private Actor hiro;
 	private Actor lucy;
+	private Sprite RING;
+
+	// animation
+	Texture hiroSpriteSheet;
+	Animation<TextureRegion> animation;
+	float elapsedTime;
+	private static final int FRAME_COLS = 3, FRAME_ROWS = 3;
 
 	@Override
 	public void create() {
@@ -67,6 +77,7 @@ public class Game extends ApplicationAdapter {
 		hiroSize = hiroImage.getHeight();
 
 		ringImage = new Ring(false);
+		RING = new Sprite(ringImage.image);
 		ringPlusImage = new Ring(true);
 
 		// load the drop sound effect and the rain background "music"
@@ -104,6 +115,23 @@ public class Game extends ApplicationAdapter {
 
 		// create the raindrops array and spawn the first raindrop
 		rings = new Array<Rectangle>();
+
+		// animation
+		hiroSpriteSheet = new Texture(Gdx.files.internal("spritesheet.png"));
+		TextureRegion[][] tmpFrames = TextureRegion.split(hiroSpriteSheet, hiroSpriteSheet.getWidth()/FRAME_COLS,hiroSpriteSheet.getHeight()/FRAME_ROWS);
+		TextureRegion[] animationFrames = new TextureRegion[FRAME_COLS * FRAME_ROWS]; // 2 images are empty
+
+		int index = 0;
+		for (int i = 0; i < FRAME_ROWS; i++) {
+			for (int j = 0; j < FRAME_COLS; j++) {
+				if ((i < 7) || (j < 7)) {
+					animationFrames[index++] = tmpFrames[i][j];
+				}
+			}
+		}
+
+		animation = new Animation<TextureRegion>(0.1f, animationFrames);
+		elapsedTime = 0f;
 	}
 
 	private String getBamboleStatus() {
@@ -144,6 +172,7 @@ public class Game extends ApplicationAdapter {
 
 	@Override
 	public void render() {
+		elapsedTime += Gdx.graphics.getDeltaTime();
 		// clear the screen with a dark blue color. The
 		// arguments to glClearColor are the red, green
 		// blue and alpha component in the range [0,1]
@@ -177,9 +206,16 @@ public class Game extends ApplicationAdapter {
 
 		whiteFont.draw(batch, "PONTOS: " + totalPoints, viewWidth/2 + viewWidth/4 , 20);
 		batch.draw(lucyImage, lucyRect.x, lucyRect.y);
-		batch.draw(hiroImage, hiroRect.x, hiroRect.y);
+
+		// ANIMATION
+		// batch.draw(hiroImage, hiroRect.x, hiroRect.y);
+		TextureRegion currentFrame = animation.getKeyFrame(elapsedTime, true);
+		batch.draw(currentFrame, hiroRect.x, hiroRect.y);
+
+
 		for(Rectangle r: rings) {
-			batch.draw(ringImage.image, r.x, r.y);
+//			batch.draw(ringImage.image, r.x, r.y);
+			RING.draw(batch);
 		}
 		batch.end();
 
@@ -215,6 +251,9 @@ public class Game extends ApplicationAdapter {
 		for (Iterator<Rectangle> iter = rings.iterator(); iter.hasNext(); ) {
 			Rectangle r = iter.next();
 			r.y -= ringVelocity * Gdx.graphics.getDeltaTime();
+			RING.setBounds(r.x,r.y,r.width,r.height);
+			RING.setOriginCenter();
+			RING.rotate(10f);
 			if(r.y + Ring.WIDTH < 0) iter.remove();
 			if(r.overlaps(hiroRect)) {
 				lastRingPosition = lucyRect.x;
@@ -238,17 +277,28 @@ public class Game extends ApplicationAdapter {
 	@Override
 	public void dispose() {
 		// dispose of all the native resources
+
+		// ring objects
 		ringImage.dispose();
 		ringPlusImage.dispose();
+
+		// hiro objects
 		hiroImage.dispose();
-		lucyImage.dispose();
 		hiro.dispose();
+		hiroSpriteSheet.dispose();
+
+		// lucy objects
+		lucyImage.dispose();
 		lucy.dispose();
+
+		// music objects
 		dropSound.dispose();
+		backgroundMusic.dispose();
+
+		// general objects
 		greenFont.dispose();
 		whiteFont.dispose();
 		redFont.dispose();
-		backgroundMusic.dispose();
 		batch.dispose();
 	}
 }
