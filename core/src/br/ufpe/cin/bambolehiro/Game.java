@@ -20,6 +20,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.TimeUtils;
 
 import br.ufpe.cin.bambolehiro.Entities.Actor;
@@ -58,19 +59,32 @@ public class Game extends ApplicationAdapter {
 	private Sprite RING;
 
 	// animation
-	Texture hiroSpriteSheet;
-	Animation<TextureRegion> animation;
-	float elapsedTime;
-	private static final int FRAME_COLS = 3, FRAME_ROWS = 3;
+	private Texture hiroRight;
+	private Texture hiroMid;
+	private Texture hiroLeft;
+	private Texture lucyRight;
+	private Texture lucyLeft;
+	private Animation<TextureRegion> hiroAnimationRight;
+	private Animation<TextureRegion> hiroAnimationMid;
+	private Animation<TextureRegion> hiroAnimationLeft;
+	private Animation<TextureRegion> lucyAnimationRight;
+	private Animation<TextureRegion> lucyAnimationLeft;
+	private float elapsedTime;
+
+	// dance movement ("0" = neutral, "1" = Center, "2" = Right, "3" = Left)
+	private ObjectMap<String,Animation<TextureRegion>> hiroAnimations;
+	private ObjectMap<String,Animation<TextureRegion>> lucyAnimations;
+	private String danceMove;
+
 
 	@Override
 	public void create() {
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 		// load the images
 		backgroundTexture = new Texture(Gdx.files.internal("bg.png"));
-		Actor hiro = new Actor("hiro_0.png");
+		hiro = new Actor("hiro_0.png");
 		hiroImage = hiro.image;
-		Actor lucy = new Actor("lucy_0.png");
+		lucy = new Actor("lucy_0.png");
 		lucyImage = lucy.image;
 
 		lucySize = lucyImage.getHeight();
@@ -116,22 +130,32 @@ public class Game extends ApplicationAdapter {
 		// create the raindrops array and spawn the first raindrop
 		rings = new Array<Rectangle>();
 
-		// animation
-		hiroSpriteSheet = new Texture(Gdx.files.internal("spritesheet.png"));
-		TextureRegion[][] tmpFrames = TextureRegion.split(hiroSpriteSheet, hiroSpriteSheet.getWidth()/FRAME_COLS,hiroSpriteSheet.getHeight()/FRAME_ROWS);
-		TextureRegion[] animationFrames = new TextureRegion[FRAME_COLS * FRAME_ROWS]; // 2 images are empty
+		// load all spritesheets for animation
+		hiroRight = new Texture(Gdx.files.internal("hiro_dir_spritesheet.png"));
+		hiroLeft = new Texture(Gdx.files.internal("hiro_esq_spritesheet.png"));
+		hiroMid = new Texture(Gdx.files.internal("hiro_mid_spritesheet.png"));
 
-		int index = 0;
-		for (int i = 0; i < FRAME_ROWS; i++) {
-			for (int j = 0; j < FRAME_COLS; j++) {
-				if ((i < 7) || (j < 7)) {
-					animationFrames[index++] = tmpFrames[i][j];
-				}
-			}
-		}
+		hiroAnimationMid = getAnimationBySpriteSheet(hiroMid, 3, 1);
+		hiroAnimationRight = getAnimationBySpriteSheet(hiroRight, 3, 1);
+		hiroAnimationLeft = getAnimationBySpriteSheet(hiroLeft, 3, 1);
+		hiroAnimations = new ObjectMap<String, Animation<TextureRegion>>();
 
-		animation = new Animation<TextureRegion>(0.1f, animationFrames);
+		hiroAnimations.put("1", hiroAnimationMid);
+		hiroAnimations.put("2", hiroAnimationRight);
+		hiroAnimations.put("3", hiroAnimationLeft);
+
+		lucyRight = new Texture(Gdx.files.internal("lucy_dir_spritesheet.png"));
+		lucyLeft = new Texture(Gdx.files.internal("lucy_esq_spritesheet.png"));
+
+		lucyAnimationRight = getAnimationBySpriteSheet(lucyRight, 2, 1);
+		lucyAnimationLeft = getAnimationBySpriteSheet(lucyLeft, 2, 1);
+		lucyAnimations = new ObjectMap<String, Animation<TextureRegion>>();
+
+		lucyAnimations.put("left", lucyAnimationLeft);
+		lucyAnimations.put("right", lucyAnimationRight);
+
 		elapsedTime = 0f;
+		danceMove = "0";
 	}
 
 	private String getBamboleStatus() {
@@ -151,6 +175,13 @@ public class Game extends ApplicationAdapter {
 		if (pos == 1) pos = 2;
 
 		ring.x = lucyRect.x + (pos * 50); // ring appears on the left/right of Lucy
+		Gdx.app.debug("mytag", ""+ ring.x);
+		if (ring.x > lucyRect.x) {
+			lucyPos = "right";
+		} else {
+			lucyPos = "left";
+		}
+
 		if(ring.x < 0) ring.x = 0;
 		if(ring.x > viewWidth + hiroSize) ring.x = viewWidth - hiroSize;
 
@@ -205,16 +236,19 @@ public class Game extends ApplicationAdapter {
         }
 
 		whiteFont.draw(batch, "PONTOS: " + totalPoints, viewWidth/2 + viewWidth/4 , 20);
-		batch.draw(lucyImage, lucyRect.x, lucyRect.y);
+
+		TextureRegion lucyCurrentFrame = lucyAnimations.get(lucyPos).getKeyFrame(elapsedTime, true);
+		batch.draw(lucyCurrentFrame, lucyRect.x, lucyRect.y);
 
 		// ANIMATION
-		// batch.draw(hiroImage, hiroRect.x, hiroRect.y);
-		TextureRegion currentFrame = animation.getKeyFrame(elapsedTime, true);
-		batch.draw(currentFrame, hiroRect.x, hiroRect.y);
-
+		if (danceMove.equals("0")) {
+			batch.draw(hiroImage, hiroRect.x, hiroRect.y);
+		} else {
+			TextureRegion currentFrame = hiroAnimations.get(danceMove).getKeyFrame(elapsedTime, true);
+			batch.draw(currentFrame, hiroRect.x, hiroRect.y);
+		}
 
 		for(Rectangle r: rings) {
-//			batch.draw(ringImage.image, r.x, r.y);
 			RING.draw(batch);
 		}
 		batch.end();
@@ -256,6 +290,7 @@ public class Game extends ApplicationAdapter {
 			RING.rotate(10f);
 			if(r.y + Ring.WIDTH < 0) iter.remove();
 			if(r.overlaps(hiroRect)) {
+				danceMove = MathUtils.random(1,3) + "";
 				lastRingPosition = lucyRect.x;
 				totalPoints+=5;
 				dropSound.play();
@@ -285,11 +320,15 @@ public class Game extends ApplicationAdapter {
 		// hiro objects
 		hiroImage.dispose();
 		hiro.dispose();
-		hiroSpriteSheet.dispose();
+		hiroLeft.dispose();
+		hiroRight.dispose();
+		hiroMid.dispose();
 
 		// lucy objects
 		lucyImage.dispose();
 		lucy.dispose();
+		lucyRight.dispose();
+		lucyLeft.dispose();
 
 		// music objects
 		dropSound.dispose();
@@ -300,6 +339,25 @@ public class Game extends ApplicationAdapter {
 		whiteFont.dispose();
 		redFont.dispose();
 		batch.dispose();
+	}
+
+	private Animation<TextureRegion> getAnimationBySpriteSheet(Texture spriteSheet, int FRAME_COLS, int FRAME_ROWS){
+		TextureRegion[][] tmpFrames =
+				TextureRegion.split(
+						spriteSheet,
+						spriteSheet.getWidth()/FRAME_COLS,
+						spriteSheet.getHeight()/FRAME_ROWS);
+
+		TextureRegion[] animationFrames = new TextureRegion[FRAME_COLS * FRAME_ROWS];
+
+		int index = 0;
+		for (int i = 0; i < FRAME_ROWS; i++) {
+			for (int j = 0; j < FRAME_COLS; j++) {
+				animationFrames[index++] = tmpFrames[i][j];
+			}
+		}
+
+		return new Animation<TextureRegion>(0.4f, animationFrames);
 	}
 }
 
