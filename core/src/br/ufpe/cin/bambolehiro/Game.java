@@ -34,6 +34,10 @@ public class Game extends ApplicationAdapter {
 		void openScoreActivity(double score);
 	}
 
+	public interface IBluetooth {
+		boolean isConnected();
+	}
+
 
 	private Texture backgroundTexture;
 	private Ring ringImage;
@@ -61,7 +65,6 @@ public class Game extends ApplicationAdapter {
 	private String lucyPos = "right";
 	private float lastRingPosition;
 	private String bamboleStatus;
-	private IBluetooth bluetoothCom;
 	private Actor hiro;
 	private Actor lucy;
 	private Sprite RING;
@@ -84,14 +87,21 @@ public class Game extends ApplicationAdapter {
 	private ObjectMap<String,Animation<TextureRegion>> lucyAnimations;
 	private String danceMove;
 
-	private IOpenActivity openActivity;
-	private Preferences prefs;
 
 	private float highScore;
+
+
+	// Native interfaces
+	private IBluetooth bluetoothCom;
+	private IOpenActivity openActivity;
+
+	// local storage
+	private Preferences prefs;
 
 	public void setOpenActivity(IOpenActivity callback) {
 		openActivity = callback;
 	}
+	public void setBluetoothInterface(IBluetooth interfaceBluetooth){ bluetoothCom = interfaceBluetooth; }
 
 	@Override
 	public void create() {
@@ -339,10 +349,6 @@ public class Game extends ApplicationAdapter {
 	    return true;
     }
 
-	public void setBluetoothInterface(IBluetooth interfaceBluetooth)
-	{
-		bluetoothCom = interfaceBluetooth;
-	}
 
 	@Override
 	public void dispose() {
