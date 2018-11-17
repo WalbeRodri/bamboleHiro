@@ -13,7 +13,7 @@ public class SampleGattAttributes {
     public static String BAMBOLE_SERVICE = "0000ffe0-0000-1000-8000-00805f9b34fb";
     public static String BAMBOLE_DATA = "0000ffe1-0000-1000-8000-00805f9b34fb";
     public static String SERVICE_BT_NAME = "00001800-0000-1000-8000-00805f9b34fb";
-    // public static String BT_ADDRESS = "00:15:83:00:CA:AD";
+    public static String BT_ADDRESS = "00:15:83:00:CA:AD";
 
     static {
         // Sample Services.

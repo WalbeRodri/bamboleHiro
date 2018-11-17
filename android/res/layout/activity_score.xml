@@ -1,22 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorLightYellow"
     tools:context=".ScoreActivity">
 
-    <android.support.v7.widget.AppCompatImageView
-        android:layout_marginBottom="320dp"
-        android:id="@+id/fullscreen_content"
-        android:src="@drawable/bbhiro"
+    <TextView
+        android:layout_marginTop="40dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="bottom|center_horizontal"
-        android:keepScreenOn="true"
-        android:text="@string/app_name"
+        android:layout_height="wrap_content"
+        android:text="@string/congrats"
+        android:textAlignment="center"
         android:textColor="@color/colorLightPink"
+        android:textSize="60sp"
         android:textStyle="bold" />
 
     <LinearLayout
@@ -27,21 +24,6 @@
         android:padding="10dp"
         >
 
-        <Button
-            android:id="@+id/btn_restart"
-            style="@style/BaseButton"
-            android:layout_width="match_parent"
-            android:layout_height="140dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginLeft="14dp"
-            android:layout_marginTop="15dp"
-            android:layout_marginRight="14dp"
-            android:layout_marginBottom="5dp"
-            android:background="@drawable/btn_rounded"
-            android:padding="10dp"
-            android:text="@string/restart_txt"
-            android:textColor="@android:color/white"
-            android:textSize="30sp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -49,7 +31,7 @@
             android:text="@string/score_name"
             android:textAlignment="center"
             android:textColor="@color/colorDarkBlue"
-            android:textSize="30sp"
+            android:textSize="20sp"
             android:textStyle="bold" />
 
         <TextView
@@ -69,7 +51,7 @@
             android:text="@string/ranking_name"
             android:textAlignment="center"
             android:textColor="@color/colorDarkBlue"
-            android:textSize="30sp"
+            android:textSize="20sp"
             android:textStyle="bold"
             />
         <TextView
@@ -80,7 +62,23 @@
             android:textColor="@color/colorDarkBlue"
             android:textSize="30sp"
             android:textStyle="bold" />
+        <Button
+            android:id="@+id/btn_restart"
+            style="@style/BaseButton"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="14dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginRight="14dp"
+            android:layout_marginBottom="5dp"
+            android:background="@drawable/btn_rounded"
+            android:padding="10dp"
+            android:text="@string/restart_txt"
+            android:textColor="@android:color/white"
+            android:textSize="30sp" />
+
 
     </LinearLayout>
 
-</android.support.constraint.ConstraintLayout>
+</FrameLayout>
