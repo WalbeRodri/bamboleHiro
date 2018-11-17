@@ -5,6 +5,9 @@
     <string name="play_txt">Vamos Jogar!</string>
     <string name="settings_txt">Configurações</string>
     <string name="info_txt">Informações</string>
+    <string name="restart_txt">Jogar Novamente</string>
+    <string name="score_name">Pontuação</string>
+    <string name="ranking_name">Melhor Pontuação</string>
 
     <!-- BLE items -->
     <string name="title_btn_scan">Scan devices</string>
@@ -25,5 +28,6 @@
     <string name="menu_disconnect">Disconnect</string>
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
+    <string name="title_activity_score">ScoreActivity</string>
 
 </resources>

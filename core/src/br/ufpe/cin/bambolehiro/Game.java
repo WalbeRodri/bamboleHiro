@@ -5,6 +5,7 @@ import java.util.Iterator;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
@@ -27,13 +28,20 @@ import br.ufpe.cin.bambolehiro.Entities.Actor;
 import br.ufpe.cin.bambolehiro.Entities.Ring;
 
 public class Game extends ApplicationAdapter {
+
+
+	public interface IOpenActivity {
+		void openScoreActivity(double score);
+	}
+
+
 	private Texture backgroundTexture;
 	private Ring ringImage;
 	private Ring ringPlusImage;
 	private Texture hiroImage;
 	private Texture lucyImage;
 	private Sound dropSound;
-	private Music backgroundMusic;
+	private Music stageMusic;
 	private SpriteBatch batch;
 	private OrthographicCamera camera;
 	private Rectangle hiroRect;
@@ -49,7 +57,7 @@ public class Game extends ApplicationAdapter {
 	private BitmapFont whiteFont;
 	private BitmapFont greenFont;
 	private BitmapFont redFont;
-	private int totalPoints;
+	private double score;
 	private String lucyPos = "right";
 	private float lastRingPosition;
 	private String bamboleStatus;
@@ -76,6 +84,14 @@ public class Game extends ApplicationAdapter {
 	private ObjectMap<String,Animation<TextureRegion>> lucyAnimations;
 	private String danceMove;
 
+	private IOpenActivity openActivity;
+	private Preferences prefs;
+
+	private float highScore;
+
+	public void setOpenActivity(IOpenActivity callback) {
+		openActivity = callback;
+	}
 
 	@Override
 	public void create() {
@@ -96,11 +112,11 @@ public class Game extends ApplicationAdapter {
 
 		// load the drop sound effect and the rain background "music"
 		dropSound = Gdx.audio.newSound(Gdx.files.internal("drop_sound.wav"));
-		backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("bambole.mp3"));
+		stageMusic = Gdx.audio.newMusic(Gdx.files.internal("bambole.mp3"));
 
 		// start the playback of the background music immediately
-		backgroundMusic.setLooping(true);
-		backgroundMusic.play();
+		stageMusic.setLooping(false);
+		stageMusic.play();
 
 		// load Font
 		FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Asap-Bold.ttf"));
@@ -156,6 +172,15 @@ public class Game extends ApplicationAdapter {
 
 		elapsedTime = 0f;
 		danceMove = "0";
+
+		// simple state for store data
+		prefs = Gdx.app.getPreferences("bambolehiro");
+		prefs.putString("username", "UsuarioTeste");
+		if (prefs.getString("highScore") == "") {
+			highScore = 0;
+		} else {
+			highScore = Float.valueOf(prefs.getString("highScore"));
+		}
 	}
 
 	private String getBamboleStatus() {
@@ -229,13 +254,13 @@ public class Game extends ApplicationAdapter {
             try{
 				greenFont.draw(batch, ""+bluetoothCom.isConnected(), 20, 20);
             } catch (Exception e){
-				greenFont.draw(batch, "none", 0, 100);
+				greenFont.draw(batch, "stream bambole: none", 0, 100);
 			}
         } else {
             redFont.draw(batch, getBamboleStatus(), 0, 20);
         }
 
-		whiteFont.draw(batch, "PONTOS: " + totalPoints, viewWidth/2 + viewWidth/4 , 20);
+		whiteFont.draw(batch, "PONTOS: " + score, viewWidth/2 + viewWidth/4 , 20);
 
 		TextureRegion lucyCurrentFrame = lucyAnimations.get(lucyPos).getKeyFrame(elapsedTime, true);
 		batch.draw(lucyCurrentFrame, lucyRect.x, lucyRect.y);
@@ -292,10 +317,20 @@ public class Game extends ApplicationAdapter {
 			if(r.overlaps(hiroRect)) {
 				danceMove = MathUtils.random(1,3) + "";
 				lastRingPosition = lucyRect.x;
-				totalPoints+=5;
+				score+=5;
 				dropSound.play();
 				iter.remove();
 			}
+		}
+
+		// Stage ending
+		if (! (stageMusic.isPlaying())) {
+			this.prefs.putString("score", String.valueOf(score));
+			if (score > highScore) {
+				this.prefs.putString("highScore", String.valueOf(score));
+			}
+			prefs.flush();
+			this.stageClear(score);
 		}
 	}
 
@@ -332,7 +367,7 @@ public class Game extends ApplicationAdapter {
 
 		// music objects
 		dropSound.dispose();
-		backgroundMusic.dispose();
+		stageMusic.dispose();
 
 		// general objects
 		greenFont.dispose();
@@ -359,6 +394,14 @@ public class Game extends ApplicationAdapter {
 
 		return new Animation<TextureRegion>(0.4f, animationFrames);
 	}
+
+	private void stageClear(double score) {
+		// stage is over, open the Score Activity
+		if (openActivity != null) {
+			openActivity.openScoreActivity(score);
+		}
+	}
+
 }
 
 //Gdx.app.debug("mytag", "my debug message");
