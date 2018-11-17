@@ -21,6 +21,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.BooleanArray;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.TimeUtils;
 
@@ -40,8 +41,9 @@ public class Game extends ApplicationAdapter {
 
 
 	private Texture backgroundTexture;
-	private Ring ringImage;
-	private Ring ringPlusImage;
+	private Ring ringNormal;
+	private Ring ringPlus;
+	private Array<Sprite> ringImages;
 	private Texture hiroImage;
 	private Texture lucyImage;
 	private Sound dropSound;
@@ -89,6 +91,11 @@ public class Game extends ApplicationAdapter {
 
 
 	private float highScore;
+	private long lastScoreUpdate;
+
+	private String ringPos;
+	private boolean isExtraPoint;
+	private boolean isBounce;
 
 
 	// Native interfaces
@@ -116,9 +123,11 @@ public class Game extends ApplicationAdapter {
 		lucySize = lucyImage.getHeight();
 		hiroSize = hiroImage.getHeight();
 
-		ringImage = new Ring(false);
-		RING = new Sprite(ringImage.image);
-		ringPlusImage = new Ring(true);
+		ringImages = this.createRingImages();
+		ringNormal = new Ring("center", false);
+		ringPlus = new Ring("center", true);
+
+		RING = new Sprite(ringImages.get(MathUtils.random(0, 2)));
 
 		// load the drop sound effect and the rain background "music"
 		dropSound = Gdx.audio.newSound(Gdx.files.internal("drop_sound.wav"));
@@ -182,11 +191,12 @@ public class Game extends ApplicationAdapter {
 
 		elapsedTime = 0f;
 		danceMove = "0";
+		ringPos = "1";
 
 		// simple state for store data
 		prefs = Gdx.app.getPreferences("bambolehiro");
 		prefs.putString("username", "UsuarioTeste");
-		if (prefs.getString("highScore") == "") {
+		if (prefs.getString("highScore").equals("")) {
 			highScore = 0;
 		} else {
 			highScore = Float.valueOf(prefs.getString("highScore"));
@@ -194,12 +204,9 @@ public class Game extends ApplicationAdapter {
 	}
 
 	private String getBamboleStatus() {
-		bamboleStatus = "BAMBOLE ";
-		if (true) {
-			bamboleStatus += "CONECTADO";
-		} else {
-			bamboleStatus += "DESCONECTADO";
-		}
+		// FIX THIS
+		// bamboleStatus = bluetoothCom.isConnected() ? "O" : "X";
+		bamboleStatus = true ? "O" : "X";
 		return bamboleStatus;
 	}
 
@@ -210,12 +217,11 @@ public class Game extends ApplicationAdapter {
 		if (pos == 1) pos = 2;
 
 		ring.x = lucyRect.x + (pos * 50); // ring appears on the left/right of Lucy
-		Gdx.app.debug("mytag", ""+ ring.x);
-		if (ring.x > lucyRect.x) {
-			lucyPos = "right";
-		} else {
-			lucyPos = "left";
-		}
+		// Gdx.app.debug("mytag", ""+ ring.x);
+		lucyPos = (ring.x > lucyRect.x) ? "right" : "left";
+
+		int extra = MathUtils.random(1,10);
+		isExtraPoint = extra % 5 == 0;
 
 		if(ring.x < 0) ring.x = 0;
 		if(ring.x > viewWidth + hiroSize) ring.x = viewWidth - hiroSize;
@@ -225,6 +231,7 @@ public class Game extends ApplicationAdapter {
 		ring.height = Ring.HEIGHT;
 		rings.add(ring);
 		lastDropTime = TimeUtils.millis();
+		lastScoreUpdate = TimeUtils.millis();
 		lastRingPosition = ring.x;
 	}
 
@@ -261,11 +268,6 @@ public class Game extends ApplicationAdapter {
 
 		if (getBLEStatus()) {
             greenFont.draw(batch, getBamboleStatus(), 0, 20);
-            try{
-				greenFont.draw(batch, ""+bluetoothCom.isConnected(), 20, 20);
-            } catch (Exception e){
-				greenFont.draw(batch, "stream bambole: none", 0, 100);
-			}
         } else {
             redFont.draw(batch, getBamboleStatus(), 0, 20);
         }
@@ -275,6 +277,12 @@ public class Game extends ApplicationAdapter {
 		TextureRegion lucyCurrentFrame = lucyAnimations.get(lucyPos).getKeyFrame(elapsedTime, true);
 		batch.draw(lucyCurrentFrame, lucyRect.x, lucyRect.y);
 
+		// Rings spawned
+		for(Rectangle r: rings) {
+			// dance moves: "0" = neutral, "1" = Center, "2" = Right, "3" = Left
+			RING.draw(batch);
+		}
+
 		// ANIMATION
 		if (danceMove.equals("0")) {
 			batch.draw(hiroImage, hiroRect.x, hiroRect.y);
@@ -283,9 +291,6 @@ public class Game extends ApplicationAdapter {
 			batch.draw(currentFrame, hiroRect.x, hiroRect.y);
 		}
 
-		for(Rectangle r: rings) {
-			RING.draw(batch);
-		}
 		batch.end();
 
 		// make sure Hiro stays within the screen bounds
@@ -303,16 +308,28 @@ public class Game extends ApplicationAdapter {
 		}
 
 		// Lucy animation
-		if (lucyPos == "right") lucyRect.x += 1;
-		if (lucyPos == "left") lucyRect.x -= 1;
+		if (lucyPos.equals("right")) lucyRect.x += 1;
+		if (lucyPos.equals("left")) lucyRect.x -= 1;
 
 		// Hiro follows the rings position
 		if (hiroRect.x > lastRingPosition) hiroRect.x -= 1;
 		else if (hiroRect.x < 0) hiroRect.x += 1;
 		else hiroRect.x += 1;
 
-		// check if we need to create a new raindrop
+		// check if we need to create a new ring (10s delay)
 		if(TimeUtils.millis() - lastDropTime > timeToSpawn) spawnRings();
+		if(TimeUtils.millis() - lastScoreUpdate > 1000) {
+			// FIX THIS se girou, soma um ponto extra
+			if (isExtraPoint && this.getBounce()) {
+				score += ringPlus.getValue();
+			} else if (!(isExtraPoint) && this.getBounce()){
+				score += ringNormal.getValue();
+			} else {
+				score++;
+			}
+			setBounce(false);
+			lastScoreUpdate = TimeUtils.millis();
+		}
 
 		// move the raindrops, remove any that are beneath the bottom edge of
 		// the screen or that hit the bucket. In the latter case we play back
@@ -321,13 +338,33 @@ public class Game extends ApplicationAdapter {
 			Rectangle r = iter.next();
 			r.y -= ringVelocity * Gdx.graphics.getDeltaTime();
 			RING.setBounds(r.x,r.y,r.width,r.height);
-			RING.setOriginCenter();
-			RING.rotate(10f);
+			ringPos = MathUtils.random(0,3) + "";
+
 			if(r.y + Ring.WIDTH < 0) iter.remove();
 			if(r.overlaps(hiroRect)) {
-				danceMove = MathUtils.random(1,3) + "";
+				if (ringPos.equals("1")) {
+					if (isExtraPoint) {
+						RING.set(ringImages.get(3));
+					} else {
+						RING.set(ringImages.get(0));
+					}
+					danceMove = "1";
+				} else if (ringPos.equals("2")) {
+					if (isExtraPoint) {
+						RING.set(ringImages.get(4));
+					} else {
+						RING.set(ringImages.get(1));
+					}
+					danceMove = "2";
+				} else {
+					if (isExtraPoint) {
+						RING.set(ringImages.get(5));
+					} else {
+						RING.set(ringImages.get(2));
+					}
+					danceMove = "3";
+				}
 				lastRingPosition = lucyRect.x;
-				score+=5;
 				dropSound.play();
 				iter.remove();
 			}
@@ -344,9 +381,18 @@ public class Game extends ApplicationAdapter {
 		}
 	}
 
+	private boolean getBounce() {
+		// FIX This to get the "girou" in BLE
+		return isBounce;
+	}
+
+	private void setBounce(boolean value) {
+		isBounce = value;
+	}
+
 	private boolean getBLEStatus() {
         // method to check if BLE is connected
-	    return true;
+	    return false;
     }
 
 
@@ -355,8 +401,7 @@ public class Game extends ApplicationAdapter {
 		// dispose of all the native resources
 
 		// ring objects
-		ringImage.dispose();
-		ringPlusImage.dispose();
+		ringNormal.dispose();
 
 		// hiro objects
 		hiroImage.dispose();
@@ -406,6 +451,19 @@ public class Game extends ApplicationAdapter {
 		if (openActivity != null) {
 			openActivity.openScoreActivity(score);
 		}
+	}
+
+	private Array<Sprite> createRingImages() {
+		Array<Sprite> tmp = new Array<Sprite>();
+		tmp.add(new Sprite(new Ring("center", false).image));
+		tmp.add(new Sprite(new Ring("right", false).image));
+		tmp.add(new Sprite(new Ring("left", false).image));
+
+		tmp.add(new Sprite(new Ring("center", true).image));
+		tmp.add(new Sprite(new Ring("right", true).image));
+		tmp.add(new Sprite(new Ring("left", true).image));
+
+		return tmp;
 	}
 
 }

@@ -15,14 +15,14 @@ public class Ring {
     public int y;
     private int velocity = Constants.RING_VELOCITY;
     private int value;
-    private boolean isPlus;
 
     private Pixmap pixmap;
     public Texture image;
+    private String type;
 
-    public Ring(boolean isPlus) {
-        this.isPlus = isPlus;
-        this.image = this.create();
+    public Ring(String type, boolean isPlus) {
+        this.type = type;
+        this.image = this.create(type, isPlus);
     }
 
     private Texture resizeToPixels(Pixmap image, int width, int height) {
@@ -36,19 +36,31 @@ public class Ring {
         return texture;
     }
 
-    public Texture create() {
+    public Texture create(String type, boolean isPlus) {
         // resize textures
-        if (this.isPlus) {
-            pixmap = new Pixmap(Gdx.files.internal("ring_plus.png"));
+        if (isPlus) {
+            this.value = 50;
+            if (type.equals("left")) {
+                pixmap = new Pixmap(Gdx.files.internal("ring_plus_esq.png"));
+            } else if (type.equals("right")) {
+                pixmap = new Pixmap(Gdx.files.internal("ring_plus_dir.png"));
+            } else {
+                // center
+                pixmap = new Pixmap(Gdx.files.internal("ring_plus_cin.png"));
+            }
         } else {
-            pixmap = new Pixmap(Gdx.files.internal("ring.png"));
+            this.value = 10;
+            if (type.equals("left")) {
+                pixmap = new Pixmap(Gdx.files.internal("ring_esq.png"));
+            } else if (type.equals("right")) {
+                pixmap = new Pixmap(Gdx.files.internal("ring_dir.png"));
+            } else {
+                // center
+                pixmap = new Pixmap(Gdx.files.internal("ring_cin.png"));
+            }
         }
 
         return resizeToPixels(pixmap, WIDTH, HEIGHT);
-    }
-
-    public void draw(){
-
     }
 
     public void dispose(){
@@ -65,5 +77,13 @@ public class Ring {
 
     public void move(int step) {
         this.y -= step;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public int getValue() {
+        return value;
     }
 }
