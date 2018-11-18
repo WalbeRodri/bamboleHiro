@@ -37,6 +37,7 @@ public class Game extends ApplicationAdapter {
 
 	public interface IBluetooth {
 		boolean isConnected();
+		boolean getBLEData();
 	}
 
 
@@ -99,7 +100,7 @@ public class Game extends ApplicationAdapter {
 
 
 	// Native interfaces
-	private IBluetooth bluetoothCom;
+	private IBluetooth bambole;
 	private IOpenActivity openActivity;
 
 	// local storage
@@ -108,7 +109,7 @@ public class Game extends ApplicationAdapter {
 	public void setOpenActivity(IOpenActivity callback) {
 		openActivity = callback;
 	}
-	public void setBluetoothInterface(IBluetooth interfaceBluetooth){ bluetoothCom = interfaceBluetooth; }
+	public void setBluetoothInterface(IBluetooth interfaceBluetooth){ bambole = interfaceBluetooth; }
 
 	@Override
 	public void create() {
@@ -205,8 +206,7 @@ public class Game extends ApplicationAdapter {
 
 	private String getBamboleStatus() {
 		// FIX THIS
-		// bamboleStatus = bluetoothCom.isConnected() ? "O" : "X";
-		bamboleStatus = true ? "O" : "X";
+		bamboleStatus = bambole.isConnected() ? "O" : "X";
 		return bamboleStatus;
 	}
 
@@ -266,7 +266,7 @@ public class Game extends ApplicationAdapter {
 		batch.begin();
 		batch.draw(backgroundTexture, -20 , 0, viewWidth+40, viewHeight);
 
-		if (getBLEStatus()) {
+		if (bambole.isConnected()) {
             greenFont.draw(batch, getBamboleStatus(), 0, 20);
         } else {
             redFont.draw(batch, getBamboleStatus(), 0, 20);
@@ -382,18 +382,12 @@ public class Game extends ApplicationAdapter {
 	}
 
 	private boolean getBounce() {
-		// FIX This to get the "girou" in BLE
 		return isBounce;
 	}
 
 	private void setBounce(boolean value) {
 		isBounce = value;
 	}
-
-	private boolean getBLEStatus() {
-        // method to check if BLE is connected
-	    return false;
-    }
 
 
 	@Override
