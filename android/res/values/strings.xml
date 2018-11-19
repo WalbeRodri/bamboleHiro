@@ -3,7 +3,7 @@
 
     <string name="app_name">BamboleHiro</string>
     <string name="play_txt">Vamos Jogar!</string>
-    <string name="settings_txt">Configurações</string>
+    <string name="settings_txt">Ranking</string>
     <string name="info_txt">Informações</string>
     <string name="restart_txt">Jogar Novamente</string>
     <string name="score_name">Pontuação</string>
