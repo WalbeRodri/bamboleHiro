@@ -8,6 +8,7 @@
     <string name="restart_txt">Jogar Novamente</string>
     <string name="score_name">Pontuação</string>
     <string name="ranking_name">Melhor Pontuação</string>
+    <string name="congrats">Parabéns</string>
 
     <!-- BLE items -->
     <string name="title_btn_scan">Scan devices</string>
