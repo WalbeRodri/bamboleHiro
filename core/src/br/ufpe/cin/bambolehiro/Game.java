@@ -32,13 +32,13 @@ public class Game extends ApplicationAdapter {
 
 
 	public interface IOpenActivity {
-		void openScoreActivity(double score);
+		void openScoreActivity(int score);
 	}
 
 	public interface IBluetooth {
 		boolean isConnected();
-		String getBLEData();
 		boolean readBLEData();
+		String getBLEData();
 	}
 
 
@@ -65,7 +65,7 @@ public class Game extends ApplicationAdapter {
 	private BitmapFont whiteFont;
 	private BitmapFont greenFont;
 	private BitmapFont redFont;
-	private double score;
+	private int score;
 	private String lucyPos = "right";
 	private float lastRingPosition;
 	private String bamboleStatus;
@@ -107,6 +107,13 @@ public class Game extends ApplicationAdapter {
 	// local storage
 	private Preferences prefs;
 
+	// feedback
+	private String feedbackText;
+	private int combo;
+
+	private boolean isRunning;
+	private boolean bamboleConectado;
+
 	public void setOpenActivity(IOpenActivity callback) {
 		openActivity = callback;
 	}
@@ -134,6 +141,9 @@ public class Game extends ApplicationAdapter {
 		// load the drop sound effect and the rain background "music"
 		dropSound = Gdx.audio.newSound(Gdx.files.internal("drop_sound.wav"));
 		stageMusic = Gdx.audio.newMusic(Gdx.files.internal("bambole.mp3"));
+//		stageMusic = Gdx.audio.newMusic(Gdx.files.internal("example_10s.mp3"));
+
+		bamboleConectado = bambole.isConnected();
 
 		// start the playback of the background music immediately
 		stageMusic.setLooping(false);
@@ -191,12 +201,15 @@ public class Game extends ApplicationAdapter {
 		lucyAnimations.put("left", lucyAnimationLeft);
 		lucyAnimations.put("right", lucyAnimationRight);
 
+		combo = 0;
+
 		elapsedTime = 0f;
-		danceMove = "0";
+		danceMove = "1";
 		ringPos = "1";
 
 		// simple state for store data
 		prefs = Gdx.app.getPreferences("bambolehiro");
+		prefs.clear();
 		prefs.putString("username", "UsuarioTeste");
 		if (prefs.getString("highScore").equals("")) {
 			highScore = 0;
@@ -206,8 +219,7 @@ public class Game extends ApplicationAdapter {
 	}
 
 	private String getBamboleStatus() {
-		// FIX THIS
-		bamboleStatus = bambole.isConnected() ? "O" : "X";
+		bamboleStatus = bambole.isConnected() ? "CONECTADO" : "DESCONECTADO";
 		return bamboleStatus;
 	}
 
@@ -218,7 +230,6 @@ public class Game extends ApplicationAdapter {
 		if (pos == 1) pos = 2;
 
 		ring.x = lucyRect.x + (pos * 50); // ring appears on the left/right of Lucy
-		// Gdx.app.debug("mytag", ""+ ring.x);
 		lucyPos = (ring.x > lucyRect.x) ? "right" : "left";
 
 		int extra = MathUtils.random(1,10);
@@ -254,8 +265,6 @@ public class Game extends ApplicationAdapter {
 		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		Gdx.app.debug("mytag", ""+bambole.getBLEData());
-
 
 		// tell the camera to update its matrices.
 		camera.update();
@@ -275,9 +284,12 @@ public class Game extends ApplicationAdapter {
             redFont.draw(batch, getBamboleStatus(), 0, 20);
         }
 
+		greenFont.draw(batch, "GIROU: " + getBounce(), 0, 100);
+
 		whiteFont.draw(batch, "PONTOS: " + score, viewWidth/2 + viewWidth/4 , 20);
 
-		TextureRegion lucyCurrentFrame = lucyAnimations.get(lucyPos).getKeyFrame(elapsedTime, true);
+		isRunning = bambole.isConnected();
+		TextureRegion lucyCurrentFrame = lucyAnimations.get(lucyPos).getKeyFrame(elapsedTime, isRunning);
 		batch.draw(lucyCurrentFrame, lucyRect.x, lucyRect.y);
 
 		// Rings spawned
@@ -287,14 +299,19 @@ public class Game extends ApplicationAdapter {
 		}
 
 		// ANIMATION
-		if (danceMove.equals("0")) {
-			batch.draw(hiroImage, hiroRect.x, hiroRect.y);
-		} else {
-			TextureRegion currentFrame = hiroAnimations.get(danceMove).getKeyFrame(elapsedTime, true);
+		if (danceMove != null) {
+			TextureRegion currentFrame = hiroAnimations.get(danceMove).getKeyFrame(elapsedTime, isRunning);
 			batch.draw(currentFrame, hiroRect.x, hiroRect.y);
 		}
 
 		batch.end();
+
+		// PAUSE GAME IF bambole is disconnected
+		if (!(isRunning)){
+			stageMusic.pause();
+			return;
+		}
+
 
 		// make sure Hiro stays within the screen bounds
 		if(hiroRect.x < 0) hiroRect.x = 0;
@@ -321,8 +338,10 @@ public class Game extends ApplicationAdapter {
 
 		// check if we need to create a new ring (10s delay)
 		if(TimeUtils.millis() - lastDropTime > timeToSpawn) spawnRings();
+
+		// update score according to ring (1s delay)
 		if(TimeUtils.millis() - lastScoreUpdate > 1000) {
-			// FIX THIS se girou, soma um ponto extra
+			Gdx.app.debug("mytag", "extraPoint: "+isExtraPoint+", bounce: "+this.getBounce());
 			if (isExtraPoint && this.getBounce()) {
 				score += ringPlus.getValue();
 			} else if (!(isExtraPoint) && this.getBounce()){
@@ -341,9 +360,10 @@ public class Game extends ApplicationAdapter {
 			Rectangle r = iter.next();
 			r.y -= ringVelocity * Gdx.graphics.getDeltaTime();
 			RING.setBounds(r.x,r.y,r.width,r.height);
-			ringPos = MathUtils.random(0,3) + "";
+			ringPos = MathUtils.random(1,3) + "";
 
 			if(r.y + Ring.WIDTH < 0) iter.remove();
+
 			if(r.overlaps(hiroRect)) {
 				if (ringPos.equals("1")) {
 					if (isExtraPoint) {
@@ -382,9 +402,15 @@ public class Game extends ApplicationAdapter {
 			prefs.flush();
 			this.stageClear(score);
 		}
+
+		// continue the music
+		// if (!(stageMusic.isPlaying())) {
+		//		stageMusic.play();
+		// }
 	}
 
 	private boolean getBounce() {
+		isBounce = bambole.readBLEData() && bambole.isConnected();
 		return isBounce;
 	}
 
@@ -443,7 +469,7 @@ public class Game extends ApplicationAdapter {
 		return new Animation<TextureRegion>(0.4f, animationFrames);
 	}
 
-	private void stageClear(double score) {
+	private void stageClear(int score) {
 		// stage is over, open the Score Activity
 		if (openActivity != null) {
 			openActivity.openScoreActivity(score);
