@@ -209,7 +209,7 @@ public class Game extends ApplicationAdapter {
 
 		// simple state for store data
 		prefs = Gdx.app.getPreferences("bambolehiro");
-		prefs.clear();
+//		prefs.clear();
 		prefs.putString("username", "UsuarioTeste");
 		if (prefs.getString("highScore").equals("")) {
 			highScore = 0;
