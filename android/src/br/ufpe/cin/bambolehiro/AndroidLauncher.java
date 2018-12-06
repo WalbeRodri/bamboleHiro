@@ -41,7 +41,7 @@ public class AndroidLauncher extends AndroidApplication implements Game.IOpenAct
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
             mConnected = result;
 			Log.e(">>>>>>>>>>." , "" +
-					" CONXAO "+ result);
+					" CONEXAO "+ result);
 		}
 		@Override
 		public void onServiceDisconnected(ComponentName componentName) {

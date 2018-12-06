@@ -3,80 +3,82 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorLightYellow"
+    android:background="@drawable/secondary_bg"
     tools:context=".FullscreenActivity">
+
     <android.support.v7.widget.AppCompatImageView
-        android:layout_marginBottom="320dp"
         android:id="@+id/fullscreen_content"
-        android:src="@drawable/bbhiro"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="bottom|center_horizontal"
+        android:layout_width="280dp"
+        android:layout_height="180dp"
+        android:layout_marginLeft="180dp"
+        android:layout_marginBottom="340dp"
+        android:foregroundGravity="center"
         android:keepScreenOn="true"
-        android:text="@string/app_name"
-        android:textColor="@color/colorLightPink"
-        android:textStyle="bold" />
+        android:src="@drawable/artboard" />
+
     <LinearLayout
+        android:id="@+id/under"
         android:layout_width="match_parent"
-        android:layout_height="420dp"
-        android:layout_gravity="bottom"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal|center_vertical"
+        android:background="@color/colorNewPink"
         android:orientation="vertical"
         android:padding="10dp">
 
-        <Button
-            android:id="@+id/btn_play"
-            style="@style/BaseButton"
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="140dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginLeft="14dp"
-            android:layout_marginTop="15dp"
-            android:layout_marginRight="14dp"
-            android:layout_marginBottom="5dp"
-            android:background="@drawable/btn_rounded"
-            android:padding="10dp"
-            android:text="@string/play_txt"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Escolha seu desafio Bambolístico"
+            android:textAlignment="center"
             android:textColor="@android:color/white"
-            android:textSize="30sp" />
+            android:textSize="20sp" />
 
         <LinearLayout
-            android:id="@+id/under"
+            android:id="@+id/linearUnder"
             android:layout_width="match_parent"
-            android:layout_height="240dp"
-            android:layout_gravity="bottom|center_horizontal"
+            android:layout_height="wrap_content"
+            android:background="@color/colorNewPink"
+            android:gravity="center"
             android:orientation="horizontal"
             android:padding="10dp">
 
             <Button
-                android:id="@+id/btn_config"
-                style="@style/BaseButton"
-                android:layout_width="0dp"
-                android:layout_height="200dp"
-                android:layout_marginRight="10dp"
-                android:layout_weight="1"
-                android:background="@drawable/btn_rounded_pink"
+                android:id="@+id/btn_play"
+                style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:background="@drawable/btn_rounded"
                 android:padding="10dp"
-                android:text="@string/info_txt"
+                android:text="1"
                 android:textColor="@android:color/white"
-                android:textSize="20dp"
-                tools:ignore="ButtonStyle" />
+                android:textSize="25sp" />
+
+            <Button
+                android:id="@+id/btn_config"
+                style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:background="@drawable/btn_rounded"
+                android:padding="10dp"
+                android:text="2"
+                android:textColor="@android:color/white"
+                android:textSize="25sp" />
 
             <Button
                 android:id="@+id/btn_info"
-                style="@style/BaseButton"
-                android:layout_width="0dp"
-                android:layout_height="200dp"
-                android:layout_margin="0dp"
-                android:layout_weight="1"
-                android:background="@drawable/btn_rounded_lightblue"
-                android:radius="10dp"
-                android:text="@string/settings_txt"
+                style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:background="@drawable/btn_rounded"
+                android:padding="10dp"
+                android:text="3"
                 android:textColor="@android:color/white"
-                android:textSize="20sp"
-                tools:ignore="ButtonStyle" />
+                android:textSize="25sp" />
 
         </LinearLayout>
     </LinearLayout>
-
-
 </FrameLayout>
