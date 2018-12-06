@@ -5,8 +5,8 @@
         <solid android:color="@color/colorNewPink"/>
         <stroke android:width="5px" android:color="#ffffff"/>
         <size
-            android:width="90dp"
-            android:height="90dp"/>
+            android:width="85dp"
+            android:height="85dp"/>
     </shape>
 </item>
 <item android:state_pressed="true">
@@ -14,8 +14,8 @@
         <stroke android:width="5px" android:color="#ffffff"/>
         <solid android:color="@color/colorNewYellow"/>
         <size
-            android:width="90dp"
-            android:height="90dp"/>
+            android:width="85dp"
+            android:height="85dp"/>
     </shape>
 </item>
 </selector>

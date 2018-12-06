@@ -3,34 +3,31 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorLightYellow"
+    android:background="@drawable/primary_bg"
     tools:context=".ScoreActivity">
 
     <TextView
-        android:layout_marginTop="40dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
         android:text="@string/congrats"
         android:textAlignment="center"
-        android:textColor="@color/colorLightPink"
+        android:textColor="@android:color/white"
         android:textSize="60sp"
         android:textStyle="bold" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="420dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:orientation="vertical"
-        android:padding="10dp"
-        >
-
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/score_name"
             android:textAlignment="center"
-            android:textColor="@color/colorDarkBlue"
+            android:textColor="@android:color/white"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -39,10 +36,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAlignment="center"
-            android:textColor="@color/colorDarkBlue"
+            android:textColor="@android:color/white"
             android:textSize="30sp"
-            android:textStyle="bold"
-            />
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textView"
@@ -50,16 +46,16 @@
             android:layout_height="wrap_content"
             android:text="@string/ranking_name"
             android:textAlignment="center"
-            android:textColor="@color/colorDarkBlue"
+            android:textColor="@android:color/white"
             android:textSize="20sp"
-            android:textStyle="bold"
-            />
+            android:textStyle="bold" />
+
         <TextView
             android:id="@+id/high_scores"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAlignment="center"
-            android:textColor="@color/colorDarkBlue"
+            android:textColor="@android:color/white"
             android:textSize="30sp"
             android:textStyle="bold" />
         <Button
@@ -78,6 +74,37 @@
             android:textColor="@android:color/white"
             android:textSize="30sp" />
 
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="320dp"
+            android:layout_gravity="bottom"
+            android:background="@color/colorNewPink"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_menu"
+                android:layout_width="match_parent"
+                android:layout_height="140dp"
+                android:layout_gravity="center_horizontal"
+                android:background="?android:attr/button"
+                android:padding="10dp"
+                android:text="@string/restart_txt"
+                android:textColor="@android:color/white"
+                android:textSize="30sp" />
+
+            <Button
+                android:id="@+id/btn_restart"
+                style="@style/BaseButton"
+                android:layout_width="match_parent"
+                android:layout_height="140dp"
+                android:layout_gravity="center_horizontal"
+                android:padding="10dp"
+                android:text="@string/restart_txt"
+                android:textColor="@android:color/white"
+                android:textSize="30sp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

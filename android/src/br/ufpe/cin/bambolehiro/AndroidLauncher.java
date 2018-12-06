@@ -23,13 +23,9 @@ public class AndroidLauncher extends AndroidApplication implements Game.IOpenAct
 	private BluetoothLeService mBluetoothLeService;
 	private String mDeviceAddress = SampleGattAttributes.BT_ADDRESS;
 	private boolean mConnected = false;
+	private String BLEData = "GIROU";
     private List<BluetoothGattService> gattServices;
     private BluetoothGattCharacteristic btCharacteristic;
-
-
-    // TESTANDO
-    private String BLEData = "";
-
 
 	private final ServiceConnection mServiceConnection = new ServiceConnection() {
 		@Override
@@ -43,7 +39,9 @@ public class AndroidLauncher extends AndroidApplication implements Game.IOpenAct
 
             // Automatically connects to the device upon successful start-up initialization.
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
-			Log.e(">>>>>>>>>>." , "CONEXAO "+ result);
+            mConnected = result;
+			Log.e(">>>>>>>>>>." , "" +
+					" CONEXAO "+ result);
 		}
 		@Override
 		public void onServiceDisconnected(ComponentName componentName) {
@@ -56,7 +54,7 @@ public class AndroidLauncher extends AndroidApplication implements Game.IOpenAct
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
-                // mConnected = true;
+                mConnected = true;
                 updateConnectionState(R.string.connected);
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
@@ -75,9 +73,6 @@ public class AndroidLauncher extends AndroidApplication implements Game.IOpenAct
                                 btCharacteristic = gattCharacteristic;
                                 mBluetoothLeService.setCharacteristicNotification(btCharacteristic, true);
                             }
-                        }
-                        if(btCharacteristic != null) {
-                            mConnected = true;
                         }
                     }
                 }
@@ -101,6 +96,7 @@ public class AndroidLauncher extends AndroidApplication implements Game.IOpenAct
         bambolehiro.setBluetoothInterface(this);
 		initialize(bambolehiro, config);
 
+        bambolehiro.setBluetoothInterface(this);
 		Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
 		bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 	}
@@ -156,7 +152,7 @@ public class AndroidLauncher extends AndroidApplication implements Game.IOpenAct
 
 	@Override
 	public boolean isConnected() {
-        return mConnected;
+		return mConnected;
 	}
 
     @Override

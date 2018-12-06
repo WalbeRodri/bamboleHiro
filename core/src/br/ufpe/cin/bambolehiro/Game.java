@@ -39,6 +39,7 @@ public class Game extends ApplicationAdapter {
 	}
 
 	public interface IBluetooth {
+			boolean readBLEData();
 		boolean isConnected();
 		boolean readBLEData();
 		String getBLEData();
@@ -254,7 +255,7 @@ public class Game extends ApplicationAdapter {
 		// of the color to be used to clear the screen.
 		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
+		Gdx.app.debug("mytag", ""+bluetoothCom.readBLEData());
 
 		// tell the camera to update its matrices.
 		camera.update();
