@@ -43,7 +43,8 @@ public class Level {
         levelBasic.put("music", "level2.mp3");
         levelBasic.put("musicDuration", "265");
         levelBasic.put("movements", "0,1,2");
-        levelBasic.put("regression", "18");
+//        levelBasic.put("regression", "18");
+        levelBasic.put("regression", "5");
         data.put("2", levelMedium);
 
         return data;

@@ -1,7 +1,6 @@
 package br.ufpe.cin.bambolehiro;
 
 import java.util.Iterator;
-import java.util.stream.IntStream;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
@@ -23,12 +22,12 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.BooleanArray;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.TimeUtils;
 
 import br.ufpe.cin.bambolehiro.Entities.Actor;
 import br.ufpe.cin.bambolehiro.Entities.Level;
+import br.ufpe.cin.bambolehiro.Entities.MovementObject;
 import br.ufpe.cin.bambolehiro.Entities.Ring;
 
 public class Game extends ApplicationAdapter {
@@ -39,9 +38,8 @@ public class Game extends ApplicationAdapter {
 	}
 
 	public interface IBluetooth {
-			boolean readBLEData();
-		boolean isConnected();
 		boolean readBLEData();
+		boolean isConnected();
 		String getBLEData();
 	}
 
@@ -57,7 +55,7 @@ public class Game extends ApplicationAdapter {
 	private ShapeRenderer shapeRenderer;
 	private OrthographicCamera camera;
 	private Rectangle hiroRect;
-	private Array<Rectangle> rings;
+	private Array<MovementObject> MOVEMENTS;
 	private long lastDropTime;
 	private int hiroSize;
 	private final int viewWidth = Constants.GAME_WIDTH;
@@ -76,6 +74,7 @@ public class Game extends ApplicationAdapter {
 	private Actor nextLeft;
 	private Actor nextRight;
 	private Sprite RING;
+	private Array<String> movementsArray;
 
 	// animation
 	private Texture hiroRight;
@@ -126,6 +125,13 @@ public class Game extends ApplicationAdapter {
 	@Override
 	public void create() {
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
+
+		movementsArray = new Array<String>();
+		movementsArray.add("center");
+		movementsArray.add("right");
+		movementsArray.add("left");
+
+
 		// load the images
 		backgroundTexture = new Texture(Gdx.files.internal("bg.png"));
 		hiro = new Actor("hiro_0.png");
@@ -153,7 +159,7 @@ public class Game extends ApplicationAdapter {
 		musicDuration = Integer.valueOf(levelData.get("musicDuration"));
 		movements = this.createMovements(levelData.get("movements").contains("0"));
 
-		Gdx.app.debug("mytag", "KEYS:" +levelData.size);
+//		Gdx.app.debug("mytag", "KEYS:" +levelData.size);
 
 		// load the drop sound effect and the rain background "music"
 		dropSound = Gdx.audio.newSound(Gdx.files.internal("drop_sound.wav"));
@@ -164,10 +170,10 @@ public class Game extends ApplicationAdapter {
 
 		// load Font
 		FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Asap-Bold.ttf"));
-		whiteFont = createFont(fontGenerator, 24, Color.WHITE);
-		whiteFontLarge = createFont(fontGenerator, 48, Color.WHITE);
-		greenFont = createFont(fontGenerator, 24, Color.GREEN);
-		redFont = createFont(fontGenerator, 24, Color.RED);
+		whiteFont = Utils.createFont(fontGenerator, 24, Color.WHITE);
+		whiteFontLarge = Utils.createFont(fontGenerator, 48, Color.WHITE);
+		greenFont = Utils.createFont(fontGenerator, 24, Color.GREEN);
+		redFont = Utils.createFont(fontGenerator, 24, Color.RED);
 		fontGenerator.dispose(); // avoid memory leaks
 
 		// create the camera and the SpriteBatch
@@ -185,7 +191,7 @@ public class Game extends ApplicationAdapter {
 
 
 		// create the raindrops array and spawn the first raindrop
-		rings = new Array<Rectangle>();
+		MOVEMENTS = new Array<MovementObject>();
 
 		// load all spritesheets for animation
 		hiroRight = new Texture(Gdx.files.internal("hiro_dir_spritesheet.png"));
@@ -229,22 +235,22 @@ public class Game extends ApplicationAdapter {
 		int extra = MathUtils.random(1,10);
 		isExtraPoint = extra % 5 == 0;
 
+		int pos = MathUtils.random(0,2);
+		String type = movementsArray.get(pos);
+
 		ring.y = viewHeight;
 		ring.width = Ring.WIDTH;
 		ring.height = Ring.HEIGHT;
-		rings.add(ring);
+
+		MovementObject obj = new MovementObject(ring, new Ring(type, isExtraPoint));
+		MOVEMENTS.add(obj);
+
 		lastDropTime = TimeUtils.millis();
 		lastScoreUpdate = TimeUtils.millis();
 		lastRingPosition = ring.x;
 	}
 
-	private BitmapFont createFont(FreeTypeFontGenerator generator, int size, Color colorName) {
-		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-		parameter.size = size;
-		parameter.color = colorName;
-		parameter.borderWidth = 2;
-		return generator.generateFont(parameter);
-	}
+
 
 	@Override
 	public void render() {
@@ -255,7 +261,7 @@ public class Game extends ApplicationAdapter {
 		// of the color to be used to clear the screen.
 		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		Gdx.app.debug("mytag", ""+bluetoothCom.readBLEData());
+//		Gdx.app.debug("mytag", ""+bluetoothCom.readBLEData());
 
 		// tell the camera to update its matrices.
 		camera.update();
@@ -284,15 +290,25 @@ public class Game extends ApplicationAdapter {
 		isRunning = bambole.isConnected() ? true : true;
 
 		// Rings spawned
-		for(Rectangle r: rings) {
+		for(MovementObject mov: MOVEMENTS) {
 			// dance moves: "0" = neutral, "1" = Center, "2" = Right, "3" = Left
-			Gdx.app.debug("mytag", ""+rings.size);
-			RING.draw(batch);
+			Rectangle r = mov.rect;
+			if (isExtraPoint) {
+				if (ringPos.equals("1")) batch.draw(ringImages.get(3), r.x, r.y);
+				else if (ringPos.equals("2")) batch.draw(ringImages.get(4), r.x, r.y);
+				else if (ringPos.equals("3")) batch.draw(ringImages.get(5), r.x, r.y);
+			} else {
+				if (ringPos.equals("1")) batch.draw(ringImages.get(0), r.x, r.y);
+				else if (ringPos.equals("2")) batch.draw(ringImages.get(1), r.x, r.y);
+				else if (ringPos.equals("3")) batch.draw(ringImages.get(2), r.x, r.y);
+			}
+
+//			RING.draw(batch);
 		}
 
 		// ANIMATION
 		// Hiro stay on the center of the screen
-		hiroRect.x = viewWidth/2 - hiroSize/2;
+		hiroRect.x = (viewWidth/4 * 3) - hiroSize/2;
 
 		if (regressionTime > 0) {
 			batch.draw(hiroImage, hiroRect.x, hiroRect.y);
@@ -356,17 +372,16 @@ public class Game extends ApplicationAdapter {
 		// move the raindrops, remove any that are beneath the bottom edge of
 		// the screen or that hit the bucket. In the latter case we play back
 		// a sound effect as well.
-		for (Iterator<Rectangle> iter = rings.iterator(); iter.hasNext(); ) {
-			Rectangle r = iter.next();
+		for (Iterator<MovementObject> iter = MOVEMENTS.iterator(); iter.hasNext(); ) {
+			MovementObject mov = iter.next();
+			Rectangle r = mov.rect;
 			r.y -= ringVelocity * Gdx.graphics.getDeltaTime();
 			RING.setBounds(r.x,r.y,r.width,r.height);
-//			ringPos = movements.pop() + "";
 			ringPos = MathUtils.random(1,3)+"";
 
 			if(r.y + Ring.WIDTH < 0) iter.remove();
 
-
-			if(r.overlaps(hiroRect) || r.y < 0) {
+			if(r.y < 0) {
 				if (ringPos.equals("1")) {
 					if (isExtraPoint) {
 						RING.set(ringImages.get(3));
@@ -396,6 +411,9 @@ public class Game extends ApplicationAdapter {
 			}
 		}
 
+		// each 1 second decrease the music duration
+		if(TimeUtils.millis() - lastScoreUpdate > 1000) musicDuration--;
+
 		// Stage ending
 		if (! (stageMusic.isPlaying())) {
 			this.prefs.putString("score", String.valueOf(score));
@@ -405,6 +423,7 @@ public class Game extends ApplicationAdapter {
 			prefs.flush();
 			this.stageClear(score);
 		}
+
 
 		// continue the music
 		// if (!(stageMusic.isPlaying())) {
