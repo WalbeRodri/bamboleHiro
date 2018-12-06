@@ -13,7 +13,7 @@ public class Ring {
 
     public int x;
     public int y;
-    private int velocity = Constants.RING_VELOCITY;
+    private int velocity = Constants.RING_BASIC_VELOCITY;
     private int value;
 
     private Pixmap pixmap;
@@ -51,12 +51,12 @@ public class Ring {
         } else {
             this.value = 10;
             if (type.equals("left")) {
-                pixmap = new Pixmap(Gdx.files.internal("ring_esq.png"));
+                pixmap = new Pixmap(Gdx.files.internal("hiro_next_left.png"));
             } else if (type.equals("right")) {
-                pixmap = new Pixmap(Gdx.files.internal("ring_dir.png"));
+                pixmap = new Pixmap(Gdx.files.internal("hiro_next_right.png"));
             } else {
                 // center
-                pixmap = new Pixmap(Gdx.files.internal("ring_cin.png"));
+                pixmap = new Pixmap(Gdx.files.internal("hiro_next_mid.png"));
             }
         }
 

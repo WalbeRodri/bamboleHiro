@@ -1,6 +1,7 @@
 package br.ufpe.cin.bambolehiro;
 
 import java.util.Iterator;
+import java.util.stream.IntStream;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
@@ -18,6 +19,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
@@ -26,6 +28,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.TimeUtils;
 
 import br.ufpe.cin.bambolehiro.Entities.Actor;
+import br.ufpe.cin.bambolehiro.Entities.Level;
 import br.ufpe.cin.bambolehiro.Entities.Ring;
 
 public class Game extends ApplicationAdapter {
@@ -47,49 +50,43 @@ public class Game extends ApplicationAdapter {
 	private Ring ringPlus;
 	private Array<Sprite> ringImages;
 	private Texture hiroImage;
-	private Texture lucyImage;
 	private Sound dropSound;
 	private Music stageMusic;
 	private SpriteBatch batch;
+	private ShapeRenderer shapeRenderer;
 	private OrthographicCamera camera;
 	private Rectangle hiroRect;
-	private Rectangle lucyRect;
 	private Array<Rectangle> rings;
 	private long lastDropTime;
 	private int hiroSize;
-	private int lucySize;
-	private final int ringVelocity = Constants.RING_VELOCITY;
 	private final int viewWidth = Constants.GAME_WIDTH;
 	private final int viewHeight = Constants.GAME_HEIGHT;
-	private final int timeToSpawn = Constants.DROP_RING_DURATION;
+	private int ringVelocity;
+	private int timeToSpawn;
 	private BitmapFont whiteFont;
 	private BitmapFont whiteFontLarge;
 	private BitmapFont greenFont;
 	private BitmapFont redFont;
 	private int score;
-	private String lucyPos = "right";
 	private float lastRingPosition;
 	private String bamboleStatus;
 	private Actor hiro;
-	private Actor lucy;
+	private Actor nextMid;
+	private Actor nextLeft;
+	private Actor nextRight;
 	private Sprite RING;
 
 	// animation
 	private Texture hiroRight;
 	private Texture hiroMid;
 	private Texture hiroLeft;
-	private Texture lucyRight;
-	private Texture lucyLeft;
 	private Animation<TextureRegion> hiroAnimationRight;
 	private Animation<TextureRegion> hiroAnimationMid;
 	private Animation<TextureRegion> hiroAnimationLeft;
-	private Animation<TextureRegion> lucyAnimationRight;
-	private Animation<TextureRegion> lucyAnimationLeft;
 	private float elapsedTime;
 
 	// dance movement ("0" = neutral, "1" = Center, "2" = Right, "3" = Left)
 	private ObjectMap<String,Animation<TextureRegion>> hiroAnimations;
-	private ObjectMap<String,Animation<TextureRegion>> lucyAnimations;
 	private String danceMove;
 
 
@@ -102,6 +99,8 @@ public class Game extends ApplicationAdapter {
 	private boolean isExtraPoint;
 	private boolean isBounce;
 
+	private Level level;
+
 
 	// Native interfaces
 	private IBluetooth bambole;
@@ -112,10 +111,11 @@ public class Game extends ApplicationAdapter {
 
 	// feedback
 	private String feedbackText;
-	private int combo;
+	private String music;
+	private int musicDuration;
 
 	private boolean isRunning;
-	private boolean bamboleConectado;
+	private Array<Integer> movements;
 
 	public void setOpenActivity(IOpenActivity callback) {
 		openActivity = callback;
@@ -129,11 +129,11 @@ public class Game extends ApplicationAdapter {
 		backgroundTexture = new Texture(Gdx.files.internal("bg.png"));
 		hiro = new Actor("hiro_0.png");
 		hiroImage = hiro.image;
-		lucy = new Actor("lucy_0.png");
-		lucyImage = lucy.image;
-
-		lucySize = lucyImage.getHeight();
 		hiroSize = hiroImage.getHeight();
+
+		nextMid = new Actor("hiro_next_mid.png");
+		nextLeft = new Actor("hiro_next_left.png");
+		nextRight = new Actor("hiro_next_right.png");
 
 		ringImages = this.createRingImages();
 		ringNormal = new Ring("center", false);
@@ -141,12 +141,22 @@ public class Game extends ApplicationAdapter {
 
 		RING = new Sprite(ringImages.get(MathUtils.random(0, 2)));
 
+		// LEVEL
+		level = new Level();
+		ObjectMap<String, String> levelData = level.getLevelByDifficulty("1");
+
+		ringVelocity = Integer.valueOf(levelData.get("velocity"));
+		timeToSpawn = Integer.valueOf(levelData.get("dropRingDuration"));
+		regressionTime = Integer.valueOf(levelData.get("regression"));
+		music = levelData.get("music");
+		musicDuration = Integer.valueOf(levelData.get("musicDuration"));
+		movements = this.createMovements(levelData.get("movements").contains("0"));
+
+		Gdx.app.debug("mytag", "KEYS:" +levelData.size);
+
 		// load the drop sound effect and the rain background "music"
 		dropSound = Gdx.audio.newSound(Gdx.files.internal("drop_sound.wav"));
-		stageMusic = Gdx.audio.newMusic(Gdx.files.internal("bambole.mp3"));
-//		stageMusic = Gdx.audio.newMusic(Gdx.files.internal("example_10s.mp3"));
-
-		bamboleConectado = bambole.isConnected();
+		stageMusic = Gdx.audio.newMusic(Gdx.files.internal(music));
 
 		// start the playback of the background music immediately
 		stageMusic.setLooping(false);
@@ -163,19 +173,15 @@ public class Game extends ApplicationAdapter {
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, viewWidth, viewHeight);
 		batch = new SpriteBatch();
+		shapeRenderer = new ShapeRenderer();
 
 		// create a Rectangle to logically represent the bucket
 		hiroRect = new Rectangle();
-		hiroRect.x = viewWidth / 2 - hiroSize / 2; // center the bucket horizontally
+		hiroRect.x = viewWidth / 2; // center the bucket horizontally
 		hiroRect.y = 20; // bottom left corner of the bucket is 20 pixels above the bottom screen edge
 		hiroRect.width = hiroSize;
 		hiroRect.height = hiroSize;
 
-		lucyRect = new Rectangle();
-		lucyRect.x = viewWidth / 2 - lucySize / 2; // center the bucket horizontally
-		lucyRect.y = viewHeight - lucySize; // bottom left corner of the bucket is 20 pixels above the bottom screen edge
-		lucyRect.width = lucySize;
-		lucyRect.height = lucySize;
 
 		// create the raindrops array and spawn the first raindrop
 		rings = new Array<Rectangle>();
@@ -185,27 +191,14 @@ public class Game extends ApplicationAdapter {
 		hiroLeft = new Texture(Gdx.files.internal("hiro_esq_spritesheet.png"));
 		hiroMid = new Texture(Gdx.files.internal("hiro_mid_spritesheet.png"));
 
-		hiroAnimationMid = getAnimationBySpriteSheet(hiroMid, 3, 1);
-		hiroAnimationRight = getAnimationBySpriteSheet(hiroRight, 3, 1);
-		hiroAnimationLeft = getAnimationBySpriteSheet(hiroLeft, 3, 1);
+		hiroAnimationMid = getAnimationBySpriteSheet(hiroMid, 4, 2);
+		hiroAnimationRight = getAnimationBySpriteSheet(hiroRight, 3, 2);
+		hiroAnimationLeft = getAnimationBySpriteSheet(hiroLeft, 4, 2);
 		hiroAnimations = new ObjectMap<String, Animation<TextureRegion>>();
 
 		hiroAnimations.put("1", hiroAnimationMid);
 		hiroAnimations.put("2", hiroAnimationRight);
 		hiroAnimations.put("3", hiroAnimationLeft);
-
-		lucyRight = new Texture(Gdx.files.internal("lucy_dir_spritesheet.png"));
-		lucyLeft = new Texture(Gdx.files.internal("lucy_esq_spritesheet.png"));
-
-		lucyAnimationRight = getAnimationBySpriteSheet(lucyRight, 2, 1);
-		lucyAnimationLeft = getAnimationBySpriteSheet(lucyLeft, 2, 1);
-		lucyAnimations = new ObjectMap<String, Animation<TextureRegion>>();
-
-		lucyAnimations.put("left", lucyAnimationLeft);
-		lucyAnimations.put("right", lucyAnimationRight);
-
-		combo = 0;
-		regressionTime = 6;
 
 		elapsedTime = 0f;
 		danceMove = "1";
@@ -220,31 +213,22 @@ public class Game extends ApplicationAdapter {
 		} else {
 			highScore = Float.valueOf(prefs.getString("highScore"));
 		}
-
-
 	}
 
 	private String getBamboleStatus() {
-		bamboleStatus = bambole.isConnected() ? "CONECTADO" : "DESCONECTADO";
+		bamboleStatus = bambole.isConnected() ? "[LIGADO]" : "[DESLIGADO]";
 		return bamboleStatus;
 	}
 
 	private void spawnRings() {
 		Rectangle ring = new Rectangle();
-		int pos = MathUtils.random(-1,1);
-		if (pos == 0) pos = 1;
-		if (pos == 1) pos = 2;
 
-		ring.x = lucyRect.x + (pos * 50); // ring appears on the left/right of Lucy
-		lucyPos = (ring.x > lucyRect.x) ? "right" : "left";
+		ring.x = ((viewWidth / 4) / 2) - 64; // ring appears on the center the screen
 
 		int extra = MathUtils.random(1,10);
 		isExtraPoint = extra % 5 == 0;
 
-		if(ring.x < 0) ring.x = 0;
-		if(ring.x > viewWidth + hiroSize) ring.x = viewWidth - hiroSize;
-
-		ring.y = viewHeight - lucySize;
+		ring.y = viewHeight;
 		ring.width = Ring.WIDTH;
 		ring.height = Ring.HEIGHT;
 		rings.add(ring);
@@ -278,43 +262,59 @@ public class Game extends ApplicationAdapter {
 		// tell the SpriteBatch to render in the
 		// coordinate system specified by the camera.
 		batch.setProjectionMatrix(camera.combined);
+		shapeRenderer.setProjectionMatrix(camera.combined);
 
 		// begin a new batch and draw the assets
 		batch.begin();
 		batch.draw(backgroundTexture, -20 , 0, viewWidth+40, viewHeight);
 
 		if (bambole.isConnected()) {
-            greenFont.draw(batch, getBamboleStatus(), 0, 20);
+            greenFont.draw(batch, getBamboleStatus(), viewWidth/2 + viewWidth/4, viewHeight);
         } else {
-            redFont.draw(batch, getBamboleStatus(), 0, 20);
+            redFont.draw(batch, getBamboleStatus(), viewWidth/2 + viewWidth/4, viewHeight);
         }
 
-		greenFont.draw(batch, "GIROU: " + getBounce(), 0, 100);
+		// DEBUG GIROU
+		// greenFont.draw(batch, "GIROU: " + getBounce(), 0, 100);
 
 		whiteFont.draw(batch, "PONTOS: " + score, viewWidth/2 + viewWidth/4 , 20);
+		whiteFont.draw(batch, musicDuration+"", viewWidth/2 , 20);
 
 		isRunning = bambole.isConnected() ? true : true;
-		TextureRegion lucyCurrentFrame = lucyAnimations.get(lucyPos).getKeyFrame(elapsedTime, isRunning);
-		batch.draw(lucyCurrentFrame, lucyRect.x, lucyRect.y);
 
 		// Rings spawned
 		for(Rectangle r: rings) {
 			// dance moves: "0" = neutral, "1" = Center, "2" = Right, "3" = Left
+			Gdx.app.debug("mytag", ""+rings.size);
 			RING.draw(batch);
 		}
 
 		// ANIMATION
-		if (danceMove != null) {
+		// Hiro stay on the center of the screen
+		hiroRect.x = viewWidth/2 - hiroSize/2;
+
+		if (regressionTime > 0) {
+			batch.draw(hiroImage, hiroRect.x, hiroRect.y);
+		} else if (danceMove != null) {
 			TextureRegion currentFrame = hiroAnimations.get(danceMove).getKeyFrame(elapsedTime, isRunning);
 			batch.draw(currentFrame, hiroRect.x, hiroRect.y);
 		}
 
 		// Countdown on screen before game starting
-		if (regressionTime > 0) {
+		if ((regressionTime > 0) && (isRunning)) {
 			whiteFontLarge.draw(batch, regressionTime+"", viewWidth/2, viewHeight/2);
+			if(!stageMusic.isPlaying()) {
+				stageMusic.play();
+			}
 		}
 
 		batch.end();
+
+		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+		shapeRenderer.setColor(Color.BLUE);
+		shapeRenderer.line(viewWidth/4, viewHeight, viewWidth/4, 0);
+		shapeRenderer.end();
+
 
 		if (regressionTime > 0) {
 			if (TimeUtils.millis() - lastRegressionTime > 1000) {
@@ -331,40 +331,16 @@ public class Game extends ApplicationAdapter {
 		if (!(isRunning)){
 			stageMusic.pause();
 			return;
-		} else {
-			if (!(stageMusic.isPlaying())) stageMusic.play();
 		}
 
 
-		// make sure Hiro stays within the screen bounds
-		if(hiroRect.x < 0) hiroRect.x = 0;
-		if(hiroRect.x > viewWidth - hiroSize) hiroRect.x = viewWidth - hiroSize;
-
-		// make sure Lucy stays within the screen bounds
-		if(lucyRect.x < 0) {
-			lucyRect.x = 0;
-			lucyPos = "right";
-		}
-		if(lucyRect.x > viewWidth - lucySize) {
-			lucyRect.x = viewWidth - lucySize;
-			lucyPos = "left";
-		}
-
-		// Lucy animation
-		if (lucyPos.equals("right")) lucyRect.x += 1;
-		if (lucyPos.equals("left")) lucyRect.x -= 1;
-
-		// Hiro follows the rings position
-		if (hiroRect.x > lastRingPosition) hiroRect.x -= 1;
-		else if (hiroRect.x < 0) hiroRect.x += 1;
-		else hiroRect.x += 1;
 
 		// check if we need to create a new ring (10s delay)
 		if(TimeUtils.millis() - lastDropTime > timeToSpawn) spawnRings();
 
 		// update score according to ring (1s delay)
 		if(TimeUtils.millis() - lastScoreUpdate > 1000) {
-			Gdx.app.debug("mytag", "extraPoint: "+isExtraPoint+", bounce: "+this.getBounce());
+//			Gdx.app.debug("mytag", "extraPoint: "+isExtraPoint+", bounce: "+this.getBounce());
 			if (isExtraPoint && this.getBounce()) {
 				score += ringPlus.getValue();
 			} else if (!(isExtraPoint) && this.getBounce()){
@@ -383,11 +359,13 @@ public class Game extends ApplicationAdapter {
 			Rectangle r = iter.next();
 			r.y -= ringVelocity * Gdx.graphics.getDeltaTime();
 			RING.setBounds(r.x,r.y,r.width,r.height);
-			ringPos = MathUtils.random(1,3) + "";
+//			ringPos = movements.pop() + "";
+			ringPos = MathUtils.random(1,3)+"";
 
 			if(r.y + Ring.WIDTH < 0) iter.remove();
 
-			if(r.overlaps(hiroRect)) {
+
+			if(r.overlaps(hiroRect) || r.y < 0) {
 				if (ringPos.equals("1")) {
 					if (isExtraPoint) {
 						RING.set(ringImages.get(3));
@@ -410,8 +388,9 @@ public class Game extends ApplicationAdapter {
 					}
 					danceMove = "3";
 				}
-				lastRingPosition = lucyRect.x;
+				lastRingPosition = viewWidth/2;
 				dropSound.play();
+
 				iter.remove();
 			}
 		}
@@ -456,12 +435,6 @@ public class Game extends ApplicationAdapter {
 		hiroRight.dispose();
 		hiroMid.dispose();
 
-		// lucy objects
-		lucyImage.dispose();
-		lucy.dispose();
-		lucyRight.dispose();
-		lucyLeft.dispose();
-
 		// music objects
 		dropSound.dispose();
 		stageMusic.dispose();
@@ -471,6 +444,7 @@ public class Game extends ApplicationAdapter {
 		whiteFont.dispose();
 		redFont.dispose();
 		batch.dispose();
+		shapeRenderer.dispose();
 	}
 
 	private Animation<TextureRegion> getAnimationBySpriteSheet(Texture spriteSheet, int FRAME_COLS, int FRAME_ROWS){
@@ -510,6 +484,18 @@ public class Game extends ApplicationAdapter {
 		tmp.add(new Sprite(new Ring("left", true).image));
 
 		return tmp;
+	}
+
+	private Array<Integer> createMovements(boolean allPositions) {
+		// this function generates 1K of random movements
+		// movements: 1 - center, 2 - right, 3 - left
+		Array<Integer> movements = new Array<Integer>();
+		for (int i=0;i<1000;i++) {
+			int movement = allPositions ? MathUtils.random(1, 3) : MathUtils.random(2, 3);
+			movements.add(movement);
+		}
+
+		return movements;
 	}
 
 }
