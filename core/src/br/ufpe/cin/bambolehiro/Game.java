@@ -63,6 +63,7 @@ public class Game extends ApplicationAdapter {
 	private final int viewHeight = Constants.GAME_HEIGHT;
 	private final int timeToSpawn = Constants.DROP_RING_DURATION;
 	private BitmapFont whiteFont;
+	private BitmapFont whiteFontLarge;
 	private BitmapFont greenFont;
 	private BitmapFont redFont;
 	private int score;
@@ -94,6 +95,8 @@ public class Game extends ApplicationAdapter {
 
 	private float highScore;
 	private long lastScoreUpdate;
+	private int regressionTime;
+	private long lastRegressionTime;
 
 	private String ringPos;
 	private boolean isExtraPoint;
@@ -147,11 +150,11 @@ public class Game extends ApplicationAdapter {
 
 		// start the playback of the background music immediately
 		stageMusic.setLooping(false);
-		stageMusic.play();
 
 		// load Font
 		FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Asap-Bold.ttf"));
 		whiteFont = createFont(fontGenerator, 24, Color.WHITE);
+		whiteFontLarge = createFont(fontGenerator, 48, Color.WHITE);
 		greenFont = createFont(fontGenerator, 24, Color.GREEN);
 		redFont = createFont(fontGenerator, 24, Color.RED);
 		fontGenerator.dispose(); // avoid memory leaks
@@ -202,6 +205,7 @@ public class Game extends ApplicationAdapter {
 		lucyAnimations.put("right", lucyAnimationRight);
 
 		combo = 0;
+		regressionTime = 6;
 
 		elapsedTime = 0f;
 		danceMove = "1";
@@ -216,6 +220,8 @@ public class Game extends ApplicationAdapter {
 		} else {
 			highScore = Float.valueOf(prefs.getString("highScore"));
 		}
+
+
 	}
 
 	private String getBamboleStatus() {
@@ -273,8 +279,7 @@ public class Game extends ApplicationAdapter {
 		// coordinate system specified by the camera.
 		batch.setProjectionMatrix(camera.combined);
 
-		// begin a new batch and draw the bucket and
-		// all drops
+		// begin a new batch and draw the assets
 		batch.begin();
 		batch.draw(backgroundTexture, -20 , 0, viewWidth+40, viewHeight);
 
@@ -288,7 +293,7 @@ public class Game extends ApplicationAdapter {
 
 		whiteFont.draw(batch, "PONTOS: " + score, viewWidth/2 + viewWidth/4 , 20);
 
-		isRunning = bambole.isConnected();
+		isRunning = bambole.isConnected() ? true : true;
 		TextureRegion lucyCurrentFrame = lucyAnimations.get(lucyPos).getKeyFrame(elapsedTime, isRunning);
 		batch.draw(lucyCurrentFrame, lucyRect.x, lucyRect.y);
 
@@ -304,12 +309,30 @@ public class Game extends ApplicationAdapter {
 			batch.draw(currentFrame, hiroRect.x, hiroRect.y);
 		}
 
+		// Countdown on screen before game starting
+		if (regressionTime > 0) {
+			whiteFontLarge.draw(batch, regressionTime+"", viewWidth/2, viewHeight/2);
+		}
+
 		batch.end();
+
+		if (regressionTime > 0) {
+			if (TimeUtils.millis() - lastRegressionTime > 1000) {
+				regressionTime--;
+				lastRegressionTime = TimeUtils.millis();
+			}
+			if (! (stageMusic.isPlaying()) ){
+				stageMusic.pause();
+			}
+			return;
+		}
 
 		// PAUSE GAME IF bambole is disconnected
 		if (!(isRunning)){
 			stageMusic.pause();
 			return;
+		} else {
+			if (!(stageMusic.isPlaying())) stageMusic.play();
 		}
 
 
