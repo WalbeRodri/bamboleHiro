@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //TODO bambole conection screen
-                Intent intent = new Intent(MainActivity.this, ScoreActivity.class);
+                Intent intent = new Intent(MainActivity.this, ConectionActivity.class);
                 MainActivity.this.startActivity(intent);
             }
         });
