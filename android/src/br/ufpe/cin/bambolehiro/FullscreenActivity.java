@@ -2,6 +2,7 @@ package br.ufpe.cin.bambolehiro;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -30,11 +31,16 @@ public class FullscreenActivity extends AppCompatActivity {
         Button normal_button = (Button) findViewById(R.id.btn_2);
         Button hard_button = (Button) findViewById(R.id.btn_3);
 
-       easy_button.setOnClickListener(new View.OnClickListener(){
+        final SharedPreferences bambolehiroPrefs = getSharedPreferences("bambolehiro", 0);
+
+        easy_button.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(FullscreenActivity.this, AndroidLauncher.class);
                 intent.putExtra("level", "1");
+                SharedPreferences.Editor editor = bambolehiroPrefs.edit();
+                editor.putString("level", "1");
+                editor.apply();
                 FullscreenActivity.this.startActivity(intent);
             }
         });
@@ -44,6 +50,9 @@ public class FullscreenActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(FullscreenActivity.this, AndroidLauncher.class);
                 intent.putExtra("level", "2");
+                SharedPreferences.Editor editor = bambolehiroPrefs.edit();
+                editor.putString("level", "2");
+                editor.apply();
                 FullscreenActivity.this.startActivity(intent);
             }
         });
@@ -53,6 +62,9 @@ public class FullscreenActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(FullscreenActivity.this, AndroidLauncher.class);
                 intent.putExtra("level", "3");
+                SharedPreferences.Editor editor = bambolehiroPrefs.edit();
+                editor.putString("level", "3");
+                editor.apply();
                 FullscreenActivity.this.startActivity(intent);
             }
         });
