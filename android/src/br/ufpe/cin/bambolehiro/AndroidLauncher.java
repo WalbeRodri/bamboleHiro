@@ -20,34 +20,35 @@ import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import java.util.List;
 
 public class AndroidLauncher extends AndroidApplication implements Game.IOpenActivity, Game.IBluetooth {
-	private BluetoothLeService mBluetoothLeService;
-	private String mDeviceAddress = SampleGattAttributes.BT_ADDRESS;
-	private boolean mConnected = false;
-	private String BLEData = "GIROU";
+    private BluetoothLeService mBluetoothLeService;
+    private String mDeviceAddress = SampleGattAttributes.BT_ADDRESS;
+    private boolean mConnected = false;
+    private String BLEData = "GIROU";
     private List<BluetoothGattService> gattServices;
     private BluetoothGattCharacteristic btCharacteristic;
 
-	private final ServiceConnection mServiceConnection = new ServiceConnection() {
-		@Override
-		public void onServiceConnected(ComponentName componentName, IBinder service) {
-			mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
-			if (!mBluetoothLeService.initialize()) {
-				Log.e(">>>>>>>>>>>>>>>>>>>>", "Unable to initialize Bluetooth");
-				finish();
-			}
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
+            if (!mBluetoothLeService.initialize()) {
+                Log.e(">>>>>>>>>>>>>>>>>>>>", "Unable to initialize Bluetooth");
+                finish();
+            }
             Log.e(">>>>>>>>>>>>>>>>>>>>", "conecting to Bluetooth");
 
             // Automatically connects to the device upon successful start-up initialization.
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
             mConnected = result;
-			Log.e(">>>>>>>>>>." , "" +
-					" CONEXAO "+ result);
-		}
-		@Override
-		public void onServiceDisconnected(ComponentName componentName) {
-			mBluetoothLeService = null;
-		}
-	};
+            Log.e(">>>>>>>>>>.", "" +
+                    " CONEXAO " + result);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mBluetoothLeService = null;
+        }
+    };
 
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @Override
@@ -59,8 +60,7 @@ public class AndroidLauncher extends AndroidApplication implements Game.IOpenAct
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
                 updateConnectionState(R.string.disconnected);
-            }
-            else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
                 gattServices = mBluetoothLeService.getSupportedGattServices();
                 for (BluetoothGattService gattService : gattServices) {
@@ -96,26 +96,26 @@ public class AndroidLauncher extends AndroidApplication implements Game.IOpenAct
         bambolehiro.setBluetoothInterface(this);
 		initialize(bambolehiro, config);
 
-        bambolehiro.setBluetoothInterface(this);
-		Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
-		bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-	}
+        // bambolehiro.setBluetoothInterface(this);
+        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+    }
 
-	@Override
-    protected void onResume(){
+    @Override
+    protected void onResume() {
         super.onResume();
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
         if (mBluetoothLeService != null) {
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
-            Log.d( "Opa: ", "OLHA EU CONECTADO :D =" + result);
+            Log.d("Opa: ", "OLHA EU CONECTADO :D =" + result);
         }
     }
-	private void displayData(String data) {
-		if (data != null) {
-			Log.d("do something with: ", data);
-		}
-	}
 
+    private void displayData(String data) {
+        if (data != null) {
+            Log.d("do something with: ", data);
+        }
+    }
 
     @Override
     protected void onDestroy() {
@@ -142,22 +142,28 @@ public class AndroidLauncher extends AndroidApplication implements Game.IOpenAct
         return intentFilter;
     }
 
-    public String getBLEData(){
+    public String getBLEData() {
         return this.BLEData;
     }
 
-    public void setBLEData(String bleData){
+    public void setBLEData(String bleData) {
         this.BLEData = bleData;
     }
 
-	@Override
-	public boolean isConnected() {
-		return mConnected;
-	}
+    @Override
+    public boolean isConnected() {
+        return mConnected;
+    }
 
     @Override
-	public boolean readBLEData(){
+    public boolean readBLEData() {
         return getBLEData().contains("girou") || getBLEData().contains("GIROU");
+    }
+
+    @Override
+    public String getLevel() {
+        Intent intent = getIntent();
+        return intent.getStringExtra("level");
     }
 
 }

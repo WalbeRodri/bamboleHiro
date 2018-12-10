@@ -40,6 +40,7 @@ public class Game extends ApplicationAdapter {
 
 	public interface IBluetooth {
 			boolean readBLEData();
+			String getLevel();
 		boolean isConnected();
 		boolean readBLEData();
 		String getBLEData();
