@@ -349,12 +349,6 @@ public class Game extends ApplicationAdapter {
 		shapeRenderer.line(viewWidth/4 + 20, viewHeight, viewWidth/4 + 20, 0);
 		shapeRenderer.end();
 
-		// each 1 second decrease the music duration
-		if(TimeUtils.millis() - lastMusicUpdate > 1000) {
-			musicDuration--;
-			lastMusicUpdate = TimeUtils.millis();
-		}
-
 		if (regressionTime > 0) {
 			if (TimeUtils.millis() - lastRegressionTime > 1000) {
 				regressionTime--;
@@ -370,6 +364,12 @@ public class Game extends ApplicationAdapter {
 		if (!(isRunning)){
 			stageMusic.pause();
 			return;
+		}
+
+		// each 1 second decrease the music duration
+		if(TimeUtils.millis() - lastMusicUpdate > 1000) {
+			musicDuration--;
+			lastMusicUpdate = TimeUtils.millis();
 		}
 
 

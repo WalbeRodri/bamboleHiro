@@ -40,7 +40,7 @@ public class AndroidLauncher extends AndroidApplication implements Game.IOpenAct
 
             // Automatically connects to the device upon successful start-up initialization.
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
-            mConnected = result;
+            // mConnected = result; this is not a good way to check is the BLE is connected
             Log.e(">>>>>>>>>>.", "" +
                     " CONEXAO " + result);
         }
