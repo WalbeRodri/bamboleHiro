@@ -33,7 +33,7 @@ public class Level {
         levelMedium.put("level", "FASE 2");
         levelMedium.put("velocity", Constants.RING_MEDIUM_VELOCITY + "");
         levelMedium.put("dropRingDuration", Constants.MEDIUM_DROP_RING_DURATION + "");
-        levelMedium.put("music", "level3.mp3");
+        levelMedium.put("music", "level2.mp3");
         levelMedium.put("musicDuration", "184");
         levelMedium.put("movements", "0,1,2");
         levelMedium.put("regression", "6");
@@ -44,11 +44,11 @@ public class Level {
         levelAdvanced.put("level", "FASE 3");
         levelAdvanced.put("velocity", Constants.RING_ADVANCED_VELOCITY + "");
         levelAdvanced.put("dropRingDuration", Constants.ADVANCED_DROP_RING_DURATION + "");
-        levelAdvanced.put("music", "level2.mp3");
-        levelAdvanced.put("musicDuration", "265");
+        levelAdvanced.put("music", "level3.mp3");
+        levelAdvanced.put("musicDuration", "276");
         levelAdvanced.put("movements", "0,1,2");
         levelAdvanced.put("regression", "18");
-        data.put("3", levelMedium);
+        data.put("3", levelAdvanced);
 
 
         return data;

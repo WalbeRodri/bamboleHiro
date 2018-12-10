@@ -161,8 +161,6 @@ public class Game extends ApplicationAdapter {
 		musicDuration = Integer.valueOf(levelData.get("musicDuration"));
 		movements = this.createMovements(levelData.get("movements").contains("0"));
 
-//		Gdx.app.debug("mytag", "KEYS:" +levelData.size);
-
 		// load the drop sound effect and the rain background "music"
 		dropSound = Gdx.audio.newSound(Gdx.files.internal("drop_sound.wav"));
 		stageMusic = Gdx.audio.newMusic(Gdx.files.internal(music));
@@ -218,7 +216,7 @@ public class Game extends ApplicationAdapter {
 
 		// simple state for store data
 		prefs = Gdx.app.getPreferences("bambolehiro");
-//		prefs.clear();
+		prefs.clear();
 		prefs.putString("username", "UsuarioTeste");
 		if (prefs.getString("highScore").equals("")) {
 			highScore = 0;
@@ -267,7 +265,6 @@ public class Game extends ApplicationAdapter {
 		// of the color to be used to clear the screen.
 		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-//		Gdx.app.debug("mytag", ""+bluetoothCom.readBLEData());
 
 		// tell the camera to update its matrices.
 		camera.update();
@@ -324,23 +321,7 @@ public class Game extends ApplicationAdapter {
 			}
 		}
 
-		isRunning = bambole.isConnected() ? true : true;
-
-		// Rings spawned
-		for(MovementObject mov: MOVEMENTS) {
-			// dance moves: "0" = neutral, "1" = Center, "2" = Right, "3" = Left
-			Rectangle r = mov.rect;
-//			if (isExtraPoint) {
-//				if (ringPos.equals("1")) batch.draw(ringImages.get(3), r.x, r.y);
-//				else if (ringPos.equals("2")) batch.draw(ringImages.get(4), r.x, r.y);
-//				else if (ringPos.equals("3")) batch.draw(ringImages.get(5), r.x, r.y);
-//			} else {
-//				if (ringPos.equals("1")) batch.draw(ringImages.get(0), r.x, r.y);
-//				else if (ringPos.equals("2")) batch.draw(ringImages.get(1), r.x, r.y);
-//				else if (ringPos.equals("3")) batch.draw(ringImages.get(2), r.x, r.y);
-//			}
-
-		}
+		isRunning = bambole.isConnected();
 
 		// ANIMATION
 		// Hiro stay on the center of the screen
@@ -421,7 +402,6 @@ public class Game extends ApplicationAdapter {
 			if (isIteration) {
 				danceMove = movements.get(index).toString();
 				nextDanceMove = movements.get(index+1).toString();
-				Gdx.app.debug("mytag", "dance move: " + danceMove + "; Next: "+ nextDanceMove);
 				isIteration = !isIteration;
 			}
 
@@ -447,11 +427,6 @@ public class Game extends ApplicationAdapter {
 			this.stageClear(score);
 		}
 
-
-		// continue the music
-		// if (!(stageMusic.isPlaying())) {
-		//		stageMusic.play();
-		// }
 	}
 
 	private boolean getBounce() {
