@@ -100,6 +100,7 @@ public class Game extends ApplicationAdapter {
 	private boolean isBounce;
 
 	private Level level;
+	private String levelName;
 
 
 	// Native interfaces
@@ -287,7 +288,9 @@ public class Game extends ApplicationAdapter {
 		// greenFont.draw(batch, "GIROU: " + getBounce(), 0, 100);
 
 		whiteFont.draw(batch, "PONTOS: " + score, viewWidth/2 + viewWidth/4 , 20);
-		whiteFont.draw(batch, musicDuration+"", viewWidth/2 , 20);
+
+//		if(TimeUtils.millis() - lastDropTime > timeToSpawn) spawnRings();
+//		whiteFont.draw(batch, musicDuration+"", viewWidth/2 , 20);
 
 		isRunning = bambole.isConnected() ? true : true;
 
@@ -295,15 +298,15 @@ public class Game extends ApplicationAdapter {
 		for(MovementObject mov: MOVEMENTS) {
 			// dance moves: "0" = neutral, "1" = Center, "2" = Right, "3" = Left
 			Rectangle r = mov.rect;
-//			if (isExtraPoint) {
-//				if (ringPos.equals("1")) batch.draw(ringImages.get(3), r.x, r.y);
-//				else if (ringPos.equals("2")) batch.draw(ringImages.get(4), r.x, r.y);
-//				else if (ringPos.equals("3")) batch.draw(ringImages.get(5), r.x, r.y);
-//			} else {
-//				if (ringPos.equals("1")) batch.draw(ringImages.get(0), r.x, r.y);
-//				else if (ringPos.equals("2")) batch.draw(ringImages.get(1), r.x, r.y);
-//				else if (ringPos.equals("3")) batch.draw(ringImages.get(2), r.x, r.y);
-//			}
+			if (isExtraPoint) {
+				if (ringPos.equals("1")) batch.draw(ringImages.get(3), r.x, r.y);
+				else if (ringPos.equals("2")) batch.draw(ringImages.get(4), r.x, r.y);
+				else if (ringPos.equals("3")) batch.draw(ringImages.get(5), r.x, r.y);
+			} else {
+				if (ringPos.equals("1")) batch.draw(ringImages.get(0), r.x, r.y);
+				else if (ringPos.equals("2")) batch.draw(ringImages.get(1), r.x, r.y);
+				else if (ringPos.equals("3")) batch.draw(ringImages.get(2), r.x, r.y);
+			}
 
 //			RING.draw(batch);
 		}
@@ -359,7 +362,6 @@ public class Game extends ApplicationAdapter {
 
 		// update score according to ring (1s delay)
 		if(TimeUtils.millis() - lastScoreUpdate > 1000) {
-//			Gdx.app.debug("mytag", "extraPoint: "+isExtraPoint+", bounce: "+this.getBounce());
 			if (isExtraPoint && this.getBounce()) {
 				score += ringPlus.getValue();
 			} else if (!(isExtraPoint) && this.getBounce()){
@@ -378,13 +380,17 @@ public class Game extends ApplicationAdapter {
 			MovementObject mov = iter.next();
 			Rectangle r = mov.rect;
 			r.y -= ringVelocity * Gdx.graphics.getDeltaTime();
-			RING.setBounds(r.x,r.y,r.width,r.height);
+
+//			RING.setBounds(r.x,r.y,r.width,r.height);
+			RING.setBounds(viewWidth/2, viewHeight/2, r.width, r.height);
+
+
 			ringPos = MathUtils.random(1,3)+"";
 			isFalling = true;
 
 			if(r.y + Ring.WIDTH < 0) iter.remove();
 
-			if(r.y < 0 && !(isFalling)) {
+			if(r.y < 0) {
 				isFalling = false;
 				if (ringPos.equals("1")) {
 					if (isExtraPoint) {
