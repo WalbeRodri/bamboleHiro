@@ -113,6 +113,7 @@ public class Game extends ApplicationAdapter {
 	private String feedbackText;
 	private String music;
 	private int musicDuration;
+	private boolean isFalling;
 
 	private boolean isRunning;
 	private Array<Integer> movements;
@@ -210,6 +211,7 @@ public class Game extends ApplicationAdapter {
 		elapsedTime = 0f;
 		danceMove = "1";
 		ringPos = "1";
+		isFalling = false;
 
 		// simple state for store data
 		prefs = Gdx.app.getPreferences("bambolehiro");
@@ -293,15 +295,15 @@ public class Game extends ApplicationAdapter {
 		for(MovementObject mov: MOVEMENTS) {
 			// dance moves: "0" = neutral, "1" = Center, "2" = Right, "3" = Left
 			Rectangle r = mov.rect;
-			if (isExtraPoint) {
-				if (ringPos.equals("1")) batch.draw(ringImages.get(3), r.x, r.y);
-				else if (ringPos.equals("2")) batch.draw(ringImages.get(4), r.x, r.y);
-				else if (ringPos.equals("3")) batch.draw(ringImages.get(5), r.x, r.y);
-			} else {
-				if (ringPos.equals("1")) batch.draw(ringImages.get(0), r.x, r.y);
-				else if (ringPos.equals("2")) batch.draw(ringImages.get(1), r.x, r.y);
-				else if (ringPos.equals("3")) batch.draw(ringImages.get(2), r.x, r.y);
-			}
+//			if (isExtraPoint) {
+//				if (ringPos.equals("1")) batch.draw(ringImages.get(3), r.x, r.y);
+//				else if (ringPos.equals("2")) batch.draw(ringImages.get(4), r.x, r.y);
+//				else if (ringPos.equals("3")) batch.draw(ringImages.get(5), r.x, r.y);
+//			} else {
+//				if (ringPos.equals("1")) batch.draw(ringImages.get(0), r.x, r.y);
+//				else if (ringPos.equals("2")) batch.draw(ringImages.get(1), r.x, r.y);
+//				else if (ringPos.equals("3")) batch.draw(ringImages.get(2), r.x, r.y);
+//			}
 
 //			RING.draw(batch);
 		}
@@ -378,10 +380,12 @@ public class Game extends ApplicationAdapter {
 			r.y -= ringVelocity * Gdx.graphics.getDeltaTime();
 			RING.setBounds(r.x,r.y,r.width,r.height);
 			ringPos = MathUtils.random(1,3)+"";
+			isFalling = true;
 
 			if(r.y + Ring.WIDTH < 0) iter.remove();
 
-			if(r.y < 0) {
+			if(r.y < 0 && !(isFalling)) {
+				isFalling = false;
 				if (ringPos.equals("1")) {
 					if (isExtraPoint) {
 						RING.set(ringImages.get(3));
