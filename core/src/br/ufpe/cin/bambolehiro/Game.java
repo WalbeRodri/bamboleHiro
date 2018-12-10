@@ -1,5 +1,6 @@
 package br.ufpe.cin.bambolehiro;
 
+import java.util.HashMap;
 import java.util.Iterator;
 
 import com.badlogic.gdx.Application;
@@ -35,11 +36,11 @@ public class Game extends ApplicationAdapter {
 
 	public interface IOpenActivity {
 		void openScoreActivity(int score);
+		String getLevel();
 	}
 
 	public interface IBluetooth {
 		boolean readBLEData();
-		String getLevel();
 		boolean isConnected();
 		String getBLEData();
 	}
@@ -58,23 +59,22 @@ public class Game extends ApplicationAdapter {
 	private Rectangle hiroRect;
 	private Array<MovementObject> MOVEMENTS;
 	private long lastDropTime;
+	private long lastFeedbackText;
+	private long lastMovement;
 	private int hiroSize;
 	private final int viewWidth = Constants.GAME_WIDTH;
 	private final int viewHeight = Constants.GAME_HEIGHT;
 	private int ringVelocity;
 	private int timeToSpawn;
+	private int index = 0;
 	private BitmapFont whiteFont;
 	private BitmapFont whiteFontLarge;
 	private BitmapFont greenFont;
 	private BitmapFont redFont;
 	private int score;
-	private float lastRingPosition;
 	private String bamboleStatus;
 	private Actor hiro;
-	private Actor nextMid;
-	private Actor nextLeft;
-	private Actor nextRight;
-	private Sprite RING;
+	private Sprite NEXT_MOVEMENT;
 	private Array<String> movementsArray;
 
 	// animation
@@ -89,20 +89,20 @@ public class Game extends ApplicationAdapter {
 	// dance movement ("0" = neutral, "1" = Center, "2" = Right, "3" = Left)
 	private ObjectMap<String,Animation<TextureRegion>> hiroAnimations;
 	private String danceMove;
+	private String nextDanceMove;
+	private boolean isIteration = true;
 
 
 	private float highScore;
 	private long lastScoreUpdate;
 	private int regressionTime;
 	private long lastRegressionTime;
+	private long lastMusicUpdate;
 
-	private String ringPos;
 	private boolean isExtraPoint;
 	private boolean isBounce;
 
 	private Level level;
-	private String levelName;
-
 
 	// Native interfaces
 	private IBluetooth bambole;
@@ -115,10 +115,11 @@ public class Game extends ApplicationAdapter {
 	private String feedbackText;
 	private String music;
 	private int musicDuration;
-	private boolean isFalling;
 
 	private boolean isRunning;
 	private Array<Integer> movements;
+
+	private int auxTimeToSpawn;
 
 	public void setOpenActivity(IOpenActivity callback) {
 		openActivity = callback;
@@ -141,22 +142,20 @@ public class Game extends ApplicationAdapter {
 		hiroImage = hiro.image;
 		hiroSize = hiroImage.getHeight();
 
-		nextMid = new Actor("hiro_next_mid.png");
-		nextLeft = new Actor("hiro_next_left.png");
-		nextRight = new Actor("hiro_next_right.png");
-
 		ringImages = this.createRingImages();
 		ringNormal = new Ring("center", false);
 		ringPlus = new Ring("center", true);
 
-		RING = new Sprite(ringImages.get(MathUtils.random(0, 2)));
+		NEXT_MOVEMENT = new Sprite();
 
 		// LEVEL
 		level = new Level();
-		ObjectMap<String, String> levelData = level.getLevelByDifficulty("1");
+		String lvl = openActivity.getLevel();
+		HashMap<String, String> levelData = level.getLevelByDifficulty(lvl);
 
 		ringVelocity = Integer.valueOf(levelData.get("velocity"));
 		timeToSpawn = Integer.valueOf(levelData.get("dropRingDuration"));
+		auxTimeToSpawn = timeToSpawn;
 		regressionTime = Integer.valueOf(levelData.get("regression"));
 		music = levelData.get("music");
 		musicDuration = Integer.valueOf(levelData.get("musicDuration"));
@@ -211,9 +210,11 @@ public class Game extends ApplicationAdapter {
 		hiroAnimations.put("3", hiroAnimationLeft);
 
 		elapsedTime = 0f;
-		danceMove = "1";
-		ringPos = "1";
-		isFalling = false;
+		feedbackText = "";
+
+		danceMove = movements.get(index).toString();
+		nextDanceMove = movements.get(index).toString();
+		index++;
 
 		// simple state for store data
 		prefs = Gdx.app.getPreferences("bambolehiro");
@@ -251,9 +252,10 @@ public class Game extends ApplicationAdapter {
 
 		lastDropTime = TimeUtils.millis();
 		lastScoreUpdate = TimeUtils.millis();
-		lastRingPosition = ring.x;
+		lastFeedbackText = TimeUtils.millis();
+		lastMovement = TimeUtils.millis();
+		lastMusicUpdate = TimeUtils.millis();
 	}
-
 
 
 	@Override
@@ -285,13 +287,42 @@ public class Game extends ApplicationAdapter {
             redFont.draw(batch, getBamboleStatus(), viewWidth/2 + viewWidth/4, viewHeight);
         }
 
-		// DEBUG GIROU
-		// greenFont.draw(batch, "GIROU: " + getBounce(), 0, 100);
-
 		whiteFont.draw(batch, "PONTOS: " + score, viewWidth/2 + viewWidth/4 , 20);
+		whiteFont.draw(batch, "TEMPO: " + musicDuration+"", viewWidth/2 , 20);
+		whiteFont.draw(batch, "   PRÓXIMO\nMOVIMENTO", 30 , viewHeight/3 * 2 + 70);
 
-//		if(TimeUtils.millis() - lastDropTime > timeToSpawn) spawnRings();
-//		whiteFont.draw(batch, musicDuration+"", viewWidth/2 , 20);
+		if (regressionTime > 0) {
+			whiteFont.draw(batch, regressionTime + "s", (viewWidth/4) / 2 , viewHeight/4);
+		} else {
+			if(TimeUtils.millis() - lastMovement > 1000) {
+				auxTimeToSpawn -= 1000;
+				if (auxTimeToSpawn == 0) {
+					auxTimeToSpawn = timeToSpawn;
+				}
+				lastMovement = TimeUtils.millis();
+			}
+			whiteFont.draw(batch, (auxTimeToSpawn/1000) + "s", (viewWidth/4) / 2 , viewHeight/4);
+		}
+
+		// updating next movement sprite
+		NEXT_MOVEMENT.set(ringImages.get(Integer.parseInt(nextDanceMove)-1));
+		NEXT_MOVEMENT.setBounds(10, 150, 180, 180);
+		NEXT_MOVEMENT.draw(batch);
+
+
+		if(TimeUtils.millis() - lastFeedbackText > 10000) {
+			if (score > 2000) feedbackText = "ÉPICO!";
+			else if (score > 1000) feedbackText = "EXCELENTE!";
+			else if (score > 500) feedbackText = "MUITO BOM!";
+			lastFeedbackText = TimeUtils.millis();
+		} else {
+			if (TimeUtils.millis() - lastFeedbackText < 3000) {
+				whiteFont.draw(batch, feedbackText, (viewWidth / 4 * 3) - hiroSize / 2 - 120, viewHeight / 2 + 150);
+			} else {
+			 	whiteFont.draw(batch, "Gire o bambolê!", (viewWidth / 4 * 3) - hiroSize / 2 - 120, viewHeight / 2 + 150);
+			 	feedbackText = "";
+			}
+		}
 
 		isRunning = bambole.isConnected() ? true : true;
 
@@ -299,22 +330,21 @@ public class Game extends ApplicationAdapter {
 		for(MovementObject mov: MOVEMENTS) {
 			// dance moves: "0" = neutral, "1" = Center, "2" = Right, "3" = Left
 			Rectangle r = mov.rect;
-			if (isExtraPoint) {
-				if (ringPos.equals("1")) batch.draw(ringImages.get(3), r.x, r.y);
-				else if (ringPos.equals("2")) batch.draw(ringImages.get(4), r.x, r.y);
-				else if (ringPos.equals("3")) batch.draw(ringImages.get(5), r.x, r.y);
-			} else {
-				if (ringPos.equals("1")) batch.draw(ringImages.get(0), r.x, r.y);
-				else if (ringPos.equals("2")) batch.draw(ringImages.get(1), r.x, r.y);
-				else if (ringPos.equals("3")) batch.draw(ringImages.get(2), r.x, r.y);
-			}
+//			if (isExtraPoint) {
+//				if (ringPos.equals("1")) batch.draw(ringImages.get(3), r.x, r.y);
+//				else if (ringPos.equals("2")) batch.draw(ringImages.get(4), r.x, r.y);
+//				else if (ringPos.equals("3")) batch.draw(ringImages.get(5), r.x, r.y);
+//			} else {
+//				if (ringPos.equals("1")) batch.draw(ringImages.get(0), r.x, r.y);
+//				else if (ringPos.equals("2")) batch.draw(ringImages.get(1), r.x, r.y);
+//				else if (ringPos.equals("3")) batch.draw(ringImages.get(2), r.x, r.y);
+//			}
 
-//			RING.draw(batch);
 		}
 
 		// ANIMATION
 		// Hiro stay on the center of the screen
-		hiroRect.x = (viewWidth/4 * 3) - hiroSize/2;
+		hiroRect.x = (viewWidth/4 * 3) - hiroSize/2 - 100;
 
 		if (regressionTime > 0) {
 			batch.draw(hiroImage, hiroRect.x, hiroRect.y);
@@ -334,10 +364,15 @@ public class Game extends ApplicationAdapter {
 		batch.end();
 
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		shapeRenderer.setColor(Color.BLUE);
-		shapeRenderer.line(viewWidth/4, viewHeight, viewWidth/4, 0);
+		shapeRenderer.setColor(Color.WHITE);
+		shapeRenderer.line(viewWidth/4 + 20, viewHeight, viewWidth/4 + 20, 0);
 		shapeRenderer.end();
 
+		// each 1 second decrease the music duration
+		if(TimeUtils.millis() - lastMusicUpdate > 1000) {
+			musicDuration--;
+			lastMusicUpdate = TimeUtils.millis();
+		}
 
 		if (regressionTime > 0) {
 			if (TimeUtils.millis() - lastRegressionTime > 1000) {
@@ -382,48 +417,25 @@ public class Game extends ApplicationAdapter {
 			Rectangle r = mov.rect;
 			r.y -= ringVelocity * Gdx.graphics.getDeltaTime();
 
-//			RING.setBounds(r.x,r.y,r.width,r.height);
-			RING.setBounds(viewWidth/2, viewHeight/2, r.width, r.height);
 
-
-			ringPos = MathUtils.random(1,3)+"";
-			isFalling = true;
+			if (isIteration) {
+				danceMove = movements.get(index).toString();
+				nextDanceMove = movements.get(index+1).toString();
+				Gdx.app.debug("mytag", "dance move: " + danceMove + "; Next: "+ nextDanceMove);
+				isIteration = !isIteration;
+			}
 
 			if(r.y + Ring.WIDTH < 0) iter.remove();
 
 			if(r.y < 0) {
-				isFalling = false;
-				if (ringPos.equals("1")) {
-					if (isExtraPoint) {
-						RING.set(ringImages.get(3));
-					} else {
-						RING.set(ringImages.get(0));
-					}
-					danceMove = "1";
-				} else if (ringPos.equals("2")) {
-					if (isExtraPoint) {
-						RING.set(ringImages.get(4));
-					} else {
-						RING.set(ringImages.get(1));
-					}
-					danceMove = "2";
-				} else {
-					if (isExtraPoint) {
-						RING.set(ringImages.get(5));
-					} else {
-						RING.set(ringImages.get(2));
-					}
-					danceMove = "3";
-				}
-				lastRingPosition = viewWidth/2;
+				index++;
+				isIteration = !isIteration;
 				dropSound.play();
-
+				auxTimeToSpawn = timeToSpawn;
 				iter.remove();
 			}
 		}
 
-		// each 1 second decrease the music duration
-		if(TimeUtils.millis() - lastScoreUpdate > 1000) musicDuration--;
 
 		// Stage ending
 		if (! (stageMusic.isPlaying())) {
