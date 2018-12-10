@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/tools">
 
     <style name="GdxTheme" parent="android:Theme">
         <item name="android:windowBackground">@android:color/transparent</item>
@@ -25,7 +25,10 @@
         <item name="colorAccent">@color/colorLightPink</item>
     </style>
 
-    <style name="FullscreenTheme" parent="AppTheme">
+    <style name="FullscreenTheme" parent="AppTheme"
+        android:theme="@android:style/Theme.NoTitleBar"
+        >
+
         <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
         <item name="android:windowActionBarOverlay">true</item>
         <item name="android:windowBackground">@null</item>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/secondary_bg"
+    tools:context=".MainActivity">
+        <android.support.v7.widget.AppCompatImageView
+
+            android:id="@+id/logoImg"
+            android:layout_width="wrap_content"
+            android:layout_height="180dp"
+            android:foregroundGravity="center"
+            android:keepScreenOn="true"
+            android:src="@drawable/artboard" />
+
+        <LinearLayout
+            android:id="@+id/under"
+            app:layout_constraintTop_toBottomOf="@+id/logoImg"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:background="@color/colorNewPink"
+            android:orientation="vertical"
+            android:layout_marginTop="10dp"
+            android:padding="10dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Seja um herói do Bambolê!"
+                android:textAlignment="center"
+                android:textColor="@android:color/white"
+                android:textSize="20sp" />
+
+            <LinearLayout
+                android:id="@+id/linearUnder"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorNewPink"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="10dp">
+
+                <Button
+                    android:id="@+id/btn_config_main"
+                    style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                    android:layout_width="55dp"
+                    android:layout_height="55dp"
+                    android:layout_marginRight="15dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginTop="5dp"
+                    android:background="@drawable/settings_small"
+                    android:padding="10dp"
+                    android:textColor="@android:color/white"
+                    android:textSize="25sp" />
+
+                <Button
+                    android:id="@+id/btn_play_main"
+                    style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                    android:layout_width="100dp"
+                    android:layout_height="135dp"
+                    android:layout_marginRight="15dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginTop="5dp"
+                    android:background="@drawable/play_white"
+                    android:padding="10dp"
+                    android:textColor="@android:color/white"
+                    android:textSize="25sp" />
+
+            </LinearLayout>
+        </LinearLayout>
+</android.support.constraint.ConstraintLayout>
