@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:background="@color/colorNewPink"
+    android:layout_height="match_parent"
+    tools:context=".ConectionActivity">
+    <LinearLayout
+        android:id="@+id/linear_conection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorNewPink"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+    <Button
+        android:id="@+id/btn_conection"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_margin="5dp"
+        android:background="@drawable/btn_rounded"
+        android:layout_marginTop="5dp"
+        android:padding="10dp"
+        android:text="Conectado!"
+        android:textColor="@android:color/white"
+        android:textSize="15sp" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/linear_under_conection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/linear_conection"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+        <Button
+            android:id="@+id/btn_menu_cnt"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="5dp"
+            android:padding="10dp"
+            android:background="@drawable/hamb"
+            android:textColor="@android:color/white"
+            android:textSize="25sp" />
+
+        <Button
+            android:id="@+id/btn_play_cnt"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="100dp"
+            android:layout_height="135dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/play_white"
+            android:padding="10dp"
+            android:textColor="@android:color/white"
+            android:textSize="25sp" />
+
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

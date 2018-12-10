@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -7,105 +8,100 @@
     tools:context=".ScoreActivity">
 
     <TextView
+        android:id="@+id/txt_gratz"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="140dp"
+        android:foregroundGravity="center"
         android:text="@string/congrats"
         android:textAlignment="center"
         android:textColor="@android:color/white"
         android:textSize="60sp"
         android:textStyle="bold" />
 
+
+    <TextView
+        android:id="@+id/score_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/score_name"
+        app:layout_constraintTop_toBottomOf="@id/txt_gratz"
+        android:textAlignment="center"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/score"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/score_name"
+        android:textAlignment="center"
+        android:textColor="@android:color/white"
+        android:textSize="30sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/best"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/score"
+        android:text="@string/ranking_name"
+        android:textAlignment="center"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/high_scores"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        app:layout_constraintTop_toBottomOf="@id/best"
+        android:textColor="@android:color/white"
+        android:textSize="30sp"
+        android:textStyle="bold" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:orientation="vertical">
+        android:layout_weight="1"
+        android:background="@color/colorNewPink"
+        android:gravity="center_horizontal|center_vertical|bottom"
+        android:orientation="horizontal"
+        android:padding="15dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/score_name"
-            android:textAlignment="center"
+        <Button
+            android:id="@+id/btn_menu_score"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/hamb"
+            android:padding="10dp"
             android:textColor="@android:color/white"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textSize="25sp" />
 
-        <TextView
-            android:id="@+id/score"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAlignment="center"
-            android:textColor="@android:color/white"
-            android:textSize="30sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/ranking_name"
-            android:textAlignment="center"
-            android:textColor="@android:color/white"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/high_scores"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAlignment="center"
-            android:textColor="@android:color/white"
-            android:textSize="30sp"
-            android:textStyle="bold" />
         <Button
             android:id="@+id/btn_restart"
-            style="@style/BaseButton"
-            android:layout_width="match_parent"
-            android:layout_height="140dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginLeft="14dp"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginLeft="15dp"
             android:layout_marginTop="15dp"
-            android:layout_marginRight="14dp"
-            android:layout_marginBottom="5dp"
-            android:background="@drawable/btn_rounded"
-            android:padding="10dp"
-            android:text="@string/restart_txt"
-            android:textColor="@android:color/white"
-            android:textSize="30sp" />
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="320dp"
-            android:layout_gravity="bottom"
-            android:background="@color/colorNewPink"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btn_menu"
-                android:layout_width="match_parent"
-                android:layout_height="140dp"
-                android:layout_gravity="center_horizontal"
-                android:background="?android:attr/button"
-                android:padding="10dp"
-                android:text="@string/restart_txt"
-                android:textColor="@android:color/white"
-                android:textSize="30sp" />
-
-            <Button
-                android:id="@+id/btn_restart"
-                style="@style/BaseButton"
-                android:layout_width="match_parent"
-                android:layout_height="140dp"
-                android:layout_gravity="center_horizontal"
-                android:padding="10dp"
-                android:text="@string/restart_txt"
-                android:textColor="@android:color/white"
-                android:textSize="30sp" />
-
-        </LinearLayout>
+            android:layout_marginRight="15dp"
+            android:background="@drawable/reset"
+            android:padding="10dp" />
 
     </LinearLayout>
 
-</FrameLayout>
+</android.support.constraint.ConstraintLayout>
+
+
+

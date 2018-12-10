@@ -31,7 +31,6 @@ android {
     }
 }
 
-
 // called every time gradle gets executed, takes the native dependencies of
 // the natives configuration, and extracts them to the proper libs/ folders
 // so they get packed with the APK.
@@ -124,7 +123,7 @@ eclipse {
 idea {
     module {
         sourceDirs += file("src");
-        scopes = [ COMPILE : [plus:[project.configurations.compile]]]
+        scopes = [COMPILE : [plus:[project.configurations.compile]]]
 
         iml {
             withXml {
@@ -134,7 +133,7 @@ idea {
                 builder.component(name: "FacetManager") {
                     facet(type: "android", name: "Android") {
                         configuration {
-                            option(name: "UPDATE_PROPERTY_FILES" , value:"true")
+                            option(name: "UPDATE_PROPETYFILES" , value:"true")
                         }
                     }
                 }

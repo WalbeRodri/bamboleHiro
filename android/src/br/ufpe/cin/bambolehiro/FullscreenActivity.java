@@ -97,17 +97,7 @@ public class FullscreenActivity extends AppCompatActivity {
         mContentView = findViewById(R.id.fullscreen_content);
 
 
-        // Set up the user interaction to manually show or hide the system UI.
-//        mContentView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                toggle();
-//            }
-//        });
 
-        // Upon interacting with UI controls, delay any scheduled hide()
-        // operations to prevent the jarring behavior of controls going away
-        // while interacting with the UI.
         Button info_button = (Button) findViewById(R.id.btn_info);
         Button play_button = (Button) findViewById(R.id.btn_play);
 
@@ -115,7 +105,6 @@ public class FullscreenActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(FullscreenActivity.this, ScoreActivity.class);
-//                Intent intent = new Intent(FullscreenActivity.this, DeviceScanActivity.class);
                 FullscreenActivity.this.startActivity(intent);
             }
         });
@@ -139,7 +128,7 @@ public class FullscreenActivity extends AppCompatActivity {
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
         // are available.
-        delayedHide(100);
+        delayedHide(1);
     }
 
     private void toggle() {
