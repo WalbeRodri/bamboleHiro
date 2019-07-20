@@ -2,7 +2,6 @@ package br.ufpe.cin.bambolehiro;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -12,7 +11,6 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
@@ -40,6 +38,7 @@ public class AndroidLauncher extends AndroidApplication implements Game.IOpenAct
 
             // Automatically connects to the device upon successful start-up initialization.
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
+            Log.e("mytag", result+"");
             // mConnected = result; this is not a good way to check is the BLE is connected
             Log.e(">>>>>>>>>>.", "" +
                     " CONEXAO " + result);

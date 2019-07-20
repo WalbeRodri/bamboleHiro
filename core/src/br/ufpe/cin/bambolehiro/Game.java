@@ -258,6 +258,7 @@ public class Game extends ApplicationAdapter {
 
 	@Override
 	public void render() {
+		// Gdx.app.debug("mytag", bambole.getBLEData());
 		elapsedTime += Gdx.graphics.getDeltaTime();
 		// clear the screen with a dark blue color. The
 		// arguments to glClearColor are the red, green
